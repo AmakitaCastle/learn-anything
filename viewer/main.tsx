@@ -27,7 +27,12 @@ async function load() {
   const registry = await loadLessonVisualRegistry(
     lesson.visuals.map((visual) => visual.grammar),
   );
-  root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
+  if (new URLSearchParams(location.search).get('video') === '1') {
+    const { mountVideo } = await import('./export');
+    await mountVideo(root, lesson, registry);
+  } else {
+    root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
+  }
 }
 load().catch(() =>
   root.render(<p role="alert">课程载入失败，请检查终端输出并重新打开课程。</p>),

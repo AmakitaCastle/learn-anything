@@ -1,0 +1,75 @@
+.classroom-shell.video-frame {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.video-content {
+  position: absolute;
+  width: calc(100vw - 48px);
+  transform-origin: top left;
+}
+.video-frame .paper-board {
+  width: 100%;
+  min-height: 0;
+  padding: 12px 16px 20px;
+}
+.video-frame .paper-heading h1 {
+  font-size: 36px;
+}
+.video-frame .paper-meta {
+  font-size: 18px;
+}
+.video-frame .teaching-board {
+  padding-top: 12px;
+}
+.video-frame .teaching-group {
+  margin: 0;
+  padding: 16px 0 0;
+}
+.video-frame .teaching-group.has-diagram {
+  min-height: 0;
+}
+.video-frame .teaching-diagram {
+  position: relative;
+  top: 0;
+}
+.video-frame .teaching-writing {
+  font-size: 24px;
+}
+.video-frame .teaching-writing h2 {
+  margin-top: 0;
+  font-size: 26px;
+}
+.video-frame .board-flow {
+  gap: 40px;
+}
+.video-frame .board-diagram,
+.video-frame .board-writing {
+  min-height: 0;
+}
+.video-frame *,
+.video-frame *::before,
+.video-frame *::after {
+  transition: none !important;
+  animation: none !important;
+}
+@media (max-aspect-ratio: 1/1) {
+  .video-frame .board-flow,
+  .video-frame .teaching-group.has-diagram {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .video-frame .teaching-diagram {
+    min-height: 0;
+  }
+  .video-frame .teaching-writing {
+    font-size: 28px;
+  }
+  .video-frame .teaching-diagram .grammar-plot,
+  .video-frame .teaching-diagram .grammar-graph {
+    height: 320px;
+  }
+}

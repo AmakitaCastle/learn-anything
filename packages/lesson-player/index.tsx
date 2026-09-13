@@ -65,10 +65,13 @@ export function ClassroomSurface({
   prepared,
   time,
   playing = false,
+  video = false,
 }: {
   prepared: PreparedLesson;
   time: number;
   playing?: boolean;
+  /** Export presentation: show the current teaching segment without scrolling. */
+  video?: boolean;
 }) {
   const frame = classroomAt(prepared, time),
     { lesson } = prepared,
@@ -101,7 +104,12 @@ export function ClassroomSurface({
         </div>
       </header>
       {lesson.teaching ? (
-        <TeachingBoard prepared={prepared} time={time} playing={playing} />
+        <TeachingBoard
+          prepared={prepared}
+          time={time}
+          playing={playing}
+          video={video}
+        />
       ) : (
         <div className="board-flow">
           <section className="board-diagram" aria-label={p.diagramTitle}>

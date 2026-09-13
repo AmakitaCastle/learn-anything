@@ -99,6 +99,17 @@ npm run lesson -- --help
 
 完整参数、错误处理和恢复说明见[终端使用指南](./docs/terminal-lesson.md)。
 
+## 导出视频与选择比例
+
+安装 FFmpeg／FFprobe，并运行一次 `npx playwright install chromium` 后：
+
+```bash
+npm run lesson -- --play outputs/runs/<id>/<run> \
+  --export-video outputs/lesson.mp4 --aspect-ratio 9:16
+```
+
+支持 `16:9` 横屏（默认）、`9:16` 竖屏和 `1:1` 方形，导出带旁白的 MP4；默认 24 帧，可用 `--fps 30` 调整。输出文件必须是新文件，父目录须存在；导出完成后退出，不打开播放器。也可给 `npm run demo` 或主题 `--generate` 命令追加这些参数。已保存课程导出不消耗接口额度，生成新课程仍需显式允许请求。布局、安装与取消说明见[视频导出指南](./docs/video-export.md)。
+
 ## 第一版范围与实现
 
 LLM 生成受约束的材料与语义锚点，编译器根据真实语音词时间戳确定事件时间；播放器只消费编译产物。内置数组查找、流程、状态转换和曲线四种动画语法；宿主另注册通用二维情境动画 `scene`，用人物、物件、气泡和区域呈现情境与概念变化。课程不执行模型生成的 HTML、JavaScript 或组件。
