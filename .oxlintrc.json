@@ -23,6 +23,8 @@
     "typeCheck": true
   },
   "ignorePatterns": [
+    "**/node_modules/**",
+    "packages/content-generator/vendor/**",
     ".next/**",
     ".vinext/**",
     "out/**",

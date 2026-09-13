@@ -1,0 +1,11 @@
+{
+  "id": "water-cycle-generated",
+  "topic": "水循环：一滴水的旅行",
+  "audience": "小学高年级学生，没有学习过水循环",
+  "language": "zh-CN",
+  "objectives": ["理解蒸发、凝结、降水和汇流", "区分水的位置与状态变化"],
+  "sourceMaterial": "水在太阳能驱动下蒸发成水蒸气；水蒸气遇冷凝结成小水滴或冰晶，形成云；水滴或冰晶增大后形成降水；水通过地表径流、下渗等路径回到水体。水循环同时涉及位置和状态的变化，并非所有水滴都沿同一条固定路线旅行。",
+  "segmentCount": 6,
+  "targetDurationSeconds": 90,
+  "allowedGrammars": ["flow"]
+}

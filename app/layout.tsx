@@ -19,8 +19,9 @@ const handwriting = Klee_One({
 });
 
 export const metadata: Metadata = {
-  title: 'learnAnything · 二分查找动态课',
-  description: '一堂把语音、动态板书与概念动画锁定在同一时间轴上的 87 秒微课。',
+  title: 'learnAnything · 一滴水的旅行',
+  description:
+    '跟着一滴水了解水循环：语音、动态板书与概念动画同步运行的自然科学微课。',
 };
 
 export default function RootLayout({

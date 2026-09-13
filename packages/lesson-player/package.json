@@ -1,0 +1,59 @@
+{
+  "name": "@learn-anything/lesson-player",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist",
+    "styles.css",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "learn-anything-source": "./index.tsx",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./clock": {
+      "learn-anything-source": "./clock.ts",
+      "types": "./dist/clock.d.ts",
+      "import": "./dist/clock.js"
+    },
+    "./runtime": {
+      "learn-anything-source": "./runtime.ts",
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    },
+    "./grammars": {
+      "learn-anything-source": "./grammars/index.ts",
+      "types": "./dist/grammars/index.d.ts",
+      "import": "./dist/grammars.js"
+    },
+    "./board": {
+      "learn-anything-source": "./board/index.tsx",
+      "types": "./dist/board/index.d.ts",
+      "import": "./dist/board.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "scripts": {
+    "build": "vite build --config vite.config.ts && tsc -p tsconfig.json --emitDeclarationOnly",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@learn-anything/lesson-schema": "0.1.0",
+    "@base-ui/react": "1.7.0",
+    "lucide-react": "1.31.0",
+    "tegaki": "^0.22.1"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "8.0.13",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
+  }
+}

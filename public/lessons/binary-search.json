@@ -45,7 +45,7 @@
     { "at": 48.646, "type": "array.window", "low": 4, "mid": 5, "high": 6 },
     { "at": 48.646, "type": "focus", "target": "new-window" },
     { "at": 53.2, "type": "array.found", "index": 5 },
-    { "at": 53.2, "type": "board.write", "id": "found", "text": "mid = 23，找到", "tone": "success" },
+    { "at": 53.2, "type": "board.write", "id": "found", "text": "中间值 = 23，找到", "tone": "success" },
     { "at": 56.588, "type": "focus", "target": "invariant" },
     { "at": 59.4, "type": "board.write", "id": "invariant", "text": "不变量", "tone": "label" },
     { "at": 61.2, "type": "board.write", "id": "invariant-rule", "text": "目标若存在，一定在 [low, high] 内", "tone": "accent" },

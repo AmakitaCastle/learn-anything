@@ -1,0 +1,557 @@
+{
+  "draftVersion": "0.1.0",
+  "id": "heating-rate-process",
+  "title": "温度与升温速度：一步一步算出来",
+  "eyebrow": "教学示例 · {duration} 秒",
+  "segments": [
+    {
+      "id": "observe",
+      "label": "观察与提问",
+      "text": "温度升高，就一定升得越来越快吗？用一组教学示例来判断。零分钟时二十摄氏度，一分钟时四十摄氏度，两分钟时五十摄氏度。我们要区分温度有多高和升温有多快。"
+    },
+    {
+      "id": "difference",
+      "label": "计算两个温差",
+      "text": "先算温差。第一段从零到一分钟，四十减二十等于二十摄氏度。第二段从一到两分钟，五十减四十等于十摄氏度。两个温差都大于零，所以两个区间的温度都升高了。"
+    },
+    {
+      "id": "rate",
+      "label": "从温差到平均速度",
+      "text": "再除以时长。平均升温速度等于温差除以时间差。第一段经过一分钟，二十除以一等于每分钟二十摄氏度。第二段也经过一分钟，十除以一等于每分钟十摄氏度。"
+    },
+    {
+      "id": "conclude",
+      "label": "比较与适用边界",
+      "text": "最后比较两个区间。十小于二十，所以第二段的平均升温速度更小。折线的第二段更平缓。温度仍然升高，但这两个区间的平均速度在减小。三个测量点不能证明每一瞬间都减速。温度升高，不等于升温加快。"
+    }
+  ],
+  "presentation": {
+    "diagramTitle": "测量曲线与推导流程",
+    "notesTitle": "条件 → 计算 → 比较 → 边界"
+  },
+  "visuals": [
+    {
+      "id": "temperature",
+      "grammar": "plot",
+      "config": {
+        "points": [
+          {
+            "x": 0,
+            "y": 20
+          },
+          {
+            "x": 1,
+            "y": 40
+          },
+          {
+            "x": 2,
+            "y": 50
+          }
+        ],
+        "xLabel": "时间（分钟）",
+        "yLabel": "温度（摄氏度）",
+        "xAxis": {
+          "min": 0,
+          "max": 2,
+          "ticks": [0, 1, 2]
+        },
+        "yAxis": {
+          "min": 0,
+          "max": 60,
+          "ticks": [0, 20, 40, 60]
+        },
+        "grid": true
+      }
+    },
+    {
+      "id": "reasoning",
+      "grammar": "flow",
+      "config": {
+        "nodes": [
+          {
+            "id": "measure",
+            "label": "读取测量值",
+            "position": {
+              "x": 50,
+              "y": 15
+            },
+            "at": {
+              "$time": {
+                "segment": "observe",
+                "phrase": "零分钟"
+              }
+            }
+          },
+          {
+            "id": "delta",
+            "label": "相减得到温差",
+            "position": {
+              "x": 50,
+              "y": 38
+            },
+            "at": {
+              "$time": {
+                "segment": "difference",
+                "phrase": "先算温差"
+              }
+            }
+          },
+          {
+            "id": "divide",
+            "label": "除以对应时长",
+            "position": {
+              "x": 50,
+              "y": 61
+            },
+            "at": {
+              "$time": {
+                "segment": "rate",
+                "phrase": "再除以时长"
+              }
+            }
+          },
+          {
+            "id": "compare",
+            "label": "比较区间平均速度",
+            "position": {
+              "x": 50,
+              "y": 84
+            },
+            "at": {
+              "$time": {
+                "segment": "conclude",
+                "phrase": "最后比较"
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "measure-delta",
+            "from": "measure",
+            "to": "delta"
+          },
+          {
+            "id": "delta-divide",
+            "from": "delta",
+            "to": "divide"
+          },
+          {
+            "id": "divide-compare",
+            "from": "divide",
+            "to": "compare"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "observe",
+        "phrase": "一定"
+      },
+      "item": {
+        "id": "question",
+        "text": "温度升高 ⇒ 升温加快？",
+        "tone": "strong"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "observe",
+        "phrase": "零分钟"
+      },
+      "item": {
+        "id": "data0",
+        "text": "0 min：20°C",
+        "tone": "plain"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "observe",
+        "phrase": "一分钟"
+      },
+      "item": {
+        "id": "data1",
+        "text": "1 min：40°C",
+        "tone": "plain"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "observe",
+        "phrase": "一分钟"
+      },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": {
+        "index": 1
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "observe",
+        "phrase": "两分钟"
+      },
+      "item": {
+        "id": "data2",
+        "text": "2 min：50°C",
+        "tone": "plain"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "observe",
+        "phrase": "两分钟"
+      },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": {
+        "index": 2
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "observe",
+        "phrase": "区分"
+      },
+      "visualId": "reasoning",
+      "action": "activate",
+      "payload": {
+        "id": "measure"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "difference",
+        "phrase": "先算温差"
+      },
+      "visualId": "reasoning",
+      "action": "activate",
+      "payload": {
+        "id": "delta"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "difference",
+        "phrase": "先算温差"
+      },
+      "visualId": "reasoning",
+      "action": "connect",
+      "payload": {
+        "id": "measure-delta"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "difference",
+        "phrase": "四十减二十"
+      },
+      "item": {
+        "id": "delta1",
+        "text": "温差① = 40 − 20 = 20°C",
+        "tone": "accent",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "difference",
+        "phrase": "五十减四十"
+      },
+      "item": {
+        "id": "delta2",
+        "text": "温差② = 50 − 40 = 10°C",
+        "tone": "accent",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "difference",
+        "phrase": "两个温差都大于零"
+      },
+      "id": "data0"
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "difference",
+        "phrase": "两个温差都大于零"
+      },
+      "id": "data1"
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "difference",
+        "phrase": "两个温差都大于零"
+      },
+      "id": "data2"
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "difference",
+        "phrase": "温度都升高"
+      },
+      "item": {
+        "id": "positive",
+        "text": "两个温差 > 0：温度都升高",
+        "tone": "plain",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "rate"
+      },
+      "id": "positive"
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "rate",
+        "phrase": "再除以时长"
+      },
+      "visualId": "reasoning",
+      "action": "activate",
+      "payload": {
+        "id": "divide"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "rate",
+        "phrase": "再除以时长"
+      },
+      "visualId": "reasoning",
+      "action": "connect",
+      "payload": {
+        "id": "delta-divide"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "rate",
+        "phrase": "平均升温速度等于"
+      },
+      "item": {
+        "id": "formula",
+        "text": "平均速度 = 温差 / 时间差",
+        "tone": "strong",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "rate",
+        "phrase": "第一段经过一分钟"
+      },
+      "item": {
+        "id": "dt1",
+        "text": "时间差① = 1 − 0 = 1 min",
+        "tone": "plain",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "rate",
+        "phrase": "二十除以一"
+      },
+      "item": {
+        "id": "rate1",
+        "text": "平均速度① = 20 / 1 = 20°C/min",
+        "tone": "accent",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "rate",
+        "phrase": "第二段也经过一分钟"
+      },
+      "id": "delta1"
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "rate",
+        "phrase": "第二段也经过一分钟"
+      },
+      "id": "dt1"
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "rate",
+        "phrase": "第二段也经过一分钟"
+      },
+      "item": {
+        "id": "dt2",
+        "text": "时间差② = 2 − 1 = 1 min",
+        "tone": "plain",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "rate",
+        "phrase": "十除以一等于每分钟十摄氏度"
+      },
+      "item": {
+        "id": "rate2",
+        "text": "平均速度② = 10 / 1 = 10°C/min",
+        "tone": "accent",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "conclude"
+      },
+      "id": "delta2"
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "conclude"
+      },
+      "id": "dt2"
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "conclude",
+        "phrase": "最后比较"
+      },
+      "visualId": "reasoning",
+      "action": "activate",
+      "payload": {
+        "id": "compare"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "conclude",
+        "phrase": "最后比较"
+      },
+      "visualId": "reasoning",
+      "action": "connect",
+      "payload": {
+        "id": "divide-compare"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "conclude",
+        "phrase": "十小于二十"
+      },
+      "item": {
+        "id": "compare",
+        "text": "10 < 20：后一区间平均速度更小",
+        "tone": "accent",
+        "kind": "formula"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "conclude",
+        "phrase": "第二段更平缓"
+      },
+      "visualId": "temperature",
+      "action": "highlight",
+      "payload": {
+        "index": 2
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "conclude",
+        "phrase": "温度仍然升高"
+      },
+      "id": "formula"
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "conclude",
+        "phrase": "温度仍然升高"
+      },
+      "item": {
+        "id": "result",
+        "text": "温度上升；区间平均速度下降",
+        "tone": "strong"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "conclude",
+        "phrase": "三个测量点"
+      },
+      "id": "compare"
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "conclude",
+        "phrase": "不能证明"
+      },
+      "item": {
+        "id": "boundary",
+        "text": "三个点不能判断每一瞬间的速度",
+        "tone": "muted"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": {
+        "segment": "conclude",
+        "phrase": "不等于"
+      },
+      "id": "question"
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "conclude",
+        "phrase": "不等于"
+      },
+      "item": {
+        "id": "conclusion",
+        "text": "温度升高 ≠ 升温加快",
+        "tone": "strong",
+        "kind": "formula"
+      }
+    }
+  ]
+}

@@ -1,16 +1,34 @@
 {
-  "name": "sites-project",
+  "name": "learn-anything",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/lesson-schema",
+    "packages/lesson-player",
+    "packages/content-generator",
+    "packages/lesson-draft-generator"
+  ],
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build",
+    "build": "npm run build:modules && vinext build",
+    "build:modules": "npm run build -w @learn-anything/lesson-schema && npm run build -w @learn-anything/lesson-player && npm run build -w @learn-anything/content-generator && npm run build -w @learn-anything/lesson-draft-generator",
+    "typecheck:modules": "npm run typecheck -w @learn-anything/lesson-schema && npm run typecheck -w @learn-anything/lesson-player && npm run typecheck -w @learn-anything/content-generator && npm run typecheck -w @learn-anything/lesson-draft-generator",
     "start": "wrangler dev --config dist/server/wrangler.json",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "lint": "oxlint app lib tests",
+    "test": "node --conditions=learn-anything-source --experimental-strip-types --test tests/*.test.ts",
+    "test:browser": "playwright test",
+    "test:modules": "npm run build:modules && node --experimental-strip-types --test tests/modules/*.test.ts",
+    "tts:preview": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-doubao-tts.ts --mode preview",
+    "tts:lesson": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-doubao-tts.ts --mode lesson",
+    "tts:align": "node --conditions=learn-anything-source --experimental-strip-types scripts/align-doubao-lesson.ts",
+    "tts:water-cycle": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-water-cycle.ts",
+    "lesson:compile": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/compile-lesson.ts",
+    "lesson:draft": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-lesson-draft.ts",
+    "lesson": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/lesson.ts",
+    "typecheck": "tsc --noEmit --incremental false",
+    "lint": "oxlint app lib packages examples scripts viewer tests playwright.config.ts",
     "format": "oxfmt"
   },
   "dependencies": {
@@ -39,8 +57,10 @@
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
     "@openai/sites-vite-plugin": "0.2.0",
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
+    "@types/pngjs": "6.0.5",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
@@ -48,6 +68,7 @@
     "oxfmt": "0.61.0",
     "oxlint": "1.76.0",
     "oxlint-tsgolint": "7.0.2001",
+    "pngjs": "7.0.0",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vite": "8.0.13",

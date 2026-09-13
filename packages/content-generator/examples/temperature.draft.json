@@ -1,0 +1,91 @@
+{
+  "draftVersion": "0.1.0",
+  "id": "temperature-rise",
+  "title": "温度怎样变化",
+  "eyebrow": "数据观察 · {duration} 秒",
+  "segments": [
+    {
+      "id": "start",
+      "label": "开始加热",
+      "text": "温度从二十度开始，随后升到四十度。"
+    },
+    {
+      "id": "rise",
+      "label": "继续观察",
+      "text": "加热继续，温度到六十度。曲线正在上升。"
+    }
+  ],
+  "presentation": { "diagramTitle": "三个测量点", "notesTitle": "观察结论" },
+  "visuals": [
+    {
+      "id": "temperature",
+      "grammar": "plot",
+      "config": {
+        "points": [
+          { "x": 0, "y": 20 },
+          { "x": 50, "y": 40 },
+          { "x": 100, "y": 60 }
+        ],
+        "xLabel": "时间",
+        "yLabel": "温度"
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "board.write",
+      "when": { "segment": "start", "phrase": "二十度" },
+      "item": { "id": "initial", "text": "起点：20°C", "tone": "plain" }
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "start", "phrase": "四十度" },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": { "index": 1 }
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "rise", "phrase": "六十度" },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": { "index": 2 }
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "rise", "phrase": "六十度", "edge": "end" },
+      "visualId": "temperature",
+      "action": "highlight",
+      "payload": { "index": 2 }
+    },
+    {
+      "type": "board.remove",
+      "when": { "segment": "rise", "phrase": "曲线正在上升" },
+      "id": "initial"
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "rise", "phrase": "曲线正在上升" },
+      "item": {
+        "id": "summary",
+        "text": "20 → 40 → 60°C",
+        "kind": "formula",
+        "tone": "strong",
+        "underline": true
+      }
+    },
+    {
+      "type": "board.mark",
+      "when": { "segment": "rise", "edge": "end" },
+      "mark": {
+        "id": "rise-arrow",
+        "region": "diagram",
+        "kind": "arrow",
+        "points": [
+          { "x": 30, "y": 70 },
+          { "x": 70, "y": 30 }
+        ]
+      }
+    }
+  ]
+}

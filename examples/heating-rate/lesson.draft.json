@@ -1,0 +1,136 @@
+{
+  "draftVersion": "0.1.0",
+  "id": "heating-rate",
+  "title": "温度升高，就一定升得越来越快吗",
+  "eyebrow": "读懂曲线 · {duration} 秒",
+  "segments": [
+    {
+      "id": "question",
+      "label": "分清两个问题",
+      "text": "温度一直升高，就说明升得越来越快吗？不一定。温度有多高，和温度升得多快，是两个问题。看这三个测量点：零分钟时，温度是二十摄氏度。"
+    },
+    {
+      "id": "compare",
+      "label": "比较相同时间",
+      "text": "一分钟时，温度是四十摄氏度。两分钟时，温度是五十摄氏度。第一个一分钟升高二十度，第二个一分钟只升高十度。时间一样长，后一次的升温更少，所以这两个区间的平均升温速度在减小。"
+    },
+    {
+      "id": "summary",
+      "label": "看高度，也看斜率",
+      "text": "在这张折线图里，曲线仍然向上，但第二段更平缓。高度告诉你温度，斜率告诉你这个区间的平均升温速度。三个测量点不能证明每一瞬间都在减速。记住：温度升高，不等于升温加快。"
+    }
+  ],
+  "presentation": {
+    "diagramTitle": "每隔一分钟测量一次",
+    "notesTitle": "高度与变化速度"
+  },
+  "visuals": [
+    {
+      "id": "temperature",
+      "grammar": "plot",
+      "config": {
+        "points": [
+          { "x": 0, "y": 20 },
+          { "x": 1, "y": 40 },
+          { "x": 2, "y": 50 }
+        ],
+        "xLabel": "时间（分钟）",
+        "xAxis": { "min": 0, "max": 2, "ticks": [0, 1, 2] },
+        "yAxis": { "min": 0, "max": 60, "ticks": [0, 20, 40, 60] },
+        "grid": true,
+        "yLabel": "温度（摄氏度）"
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "board.write",
+      "when": { "segment": "question", "phrase": "两个问题" },
+      "item": {
+        "id": "question",
+        "text": "温度 ≠ 升温速度",
+        "tone": "strong",
+        "underline": true
+      }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "question", "phrase": "二十摄氏度" },
+      "item": { "id": "measurements", "text": "0 分钟：20°C", "tone": "plain" }
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "compare", "phrase": "四十摄氏度" },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": { "index": 1 }
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "compare", "phrase": "五十摄氏度" },
+      "visualId": "temperature",
+      "action": "reveal",
+      "payload": { "index": 2 }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "compare", "phrase": "升高二十度" },
+      "item": {
+        "id": "first",
+        "text": "0–1 分钟：(40−20)/1 = 20°C/min",
+        "kind": "formula",
+        "tone": "accent"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "compare", "phrase": "升高十度" },
+      "item": {
+        "id": "second",
+        "text": "1–2 分钟：(50−40)/1 = 10°C/min",
+        "kind": "formula",
+        "tone": "accent"
+      }
+    },
+    {
+      "type": "board.remove",
+      "when": { "segment": "summary" },
+      "id": "measurements"
+    },
+    {
+      "type": "visual",
+      "when": { "segment": "summary", "phrase": "第二段更平缓" },
+      "visualId": "temperature",
+      "action": "highlight",
+      "payload": { "index": 2 }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "summary", "phrase": "高度告诉你温度" },
+      "item": {
+        "id": "reading",
+        "text": "高度 → 温度；斜率 → 区间平均速度",
+        "tone": "plain"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "summary", "phrase": "不能证明" },
+      "item": {
+        "id": "boundary",
+        "text": "三个测量点 ≠ 每一瞬间的变化",
+        "tone": "muted"
+      }
+    },
+    {
+      "type": "board.write",
+      "when": { "segment": "summary", "phrase": "记住" },
+      "item": {
+        "id": "summary",
+        "text": "温度升高 ≠ 升温加快",
+        "tone": "strong",
+        "underline": true
+      }
+    }
+  ]
+}

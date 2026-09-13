@@ -1,0 +1,56 @@
+{
+  "name": "@learn-anything/content-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "files": [
+    "dist",
+    "fonts",
+    "vendor",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "learn-anything-source": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tts/*": {
+      "learn-anything-source": "./tts/*.ts",
+      "types": "./dist/tts/*.d.ts",
+      "import": "./dist/tts/*.js"
+    },
+    "./legacy-lesson": {
+      "learn-anything-source": "./legacy-lesson.ts",
+      "types": "./dist/legacy-lesson.d.ts",
+      "import": "./dist/legacy-lesson.js"
+    },
+    "./examples/water-cycle": {
+      "learn-anything-source": "./examples/water-cycle.ts",
+      "types": "./dist/examples/water-cycle.d.ts",
+      "import": "./dist/examples/water-cycle.js"
+    },
+    "./examples/water-cycle.draft.json": {
+      "learn-anything-source": "./examples/water-cycle.draft.json",
+      "default": "./dist/examples/water-cycle.draft.json"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && mkdir -p dist/fonts dist/vendor && cp fonts/ma-shan-zheng.ttf fonts/OFL.txt dist/fonts/ && cp vendor/tegaki-generator.mjs vendor/LICENSE.tegaki dist/vendor/",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@learn-anything/lesson-schema": "0.1.0",
+    "d3-delaunay": "6.0.4",
+    "harfbuzzjs": "1.4.0",
+    "opentype.js": "2.0.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "typescript": "5.9.3"
+  }
+}

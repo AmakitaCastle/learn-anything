@@ -1,7 +1,11 @@
 import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
-import { defineConfig } from 'vite';
+import {
+  defineConfig,
+  defaultClientConditions,
+  defaultServerConditions,
+} from 'vite';
 import hostingConfig from './.openai/hosting.json';
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -34,7 +38,7 @@ const localBindingConfig = {
     : [],
 };
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ command }) => {
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= 'false';
@@ -45,6 +49,22 @@ export default defineConfig(async () => {
   const { cloudflare } = await import('@cloudflare/vite-plugin');
 
   return {
+    // Only this workspace opts into live source. Packaged consumers always
+    // use distributable ESM, including ordinary Vite development mode.
+    resolve: {
+      conditions:
+        command === 'serve'
+          ? ['learn-anything-source', ...defaultClientConditions]
+          : [...defaultClientConditions],
+    },
+    ssr: {
+      resolve: {
+        conditions:
+          command === 'serve'
+            ? ['learn-anything-source', ...defaultServerConditions]
+            : [...defaultServerConditions],
+      },
+    },
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "strict": true,
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "skipLibCheck": true
+  },
+  "include": [
+    "index.ts",
+    "artifacts.ts",
+    "compiler.ts",
+    "audio.ts",
+    "legacy-lesson.ts",
+    "tts/**/*.ts",
+    "examples/**/*.ts"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

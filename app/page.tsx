@@ -1,9 +1,6 @@
 import LessonPlayer from '@/app/lesson-player';
-import lessonData from '@/public/lessons/binary-search.json';
-import type { LessonSpec } from '@/lib/lesson';
-
-const lesson = lessonData as LessonSpec;
+import { waterFlowLesson } from '../examples/water-cycle/lesson';
 
 export default function Home() {
-  return <LessonPlayer lesson={lesson} />;
+  return <LessonPlayer lesson={waterFlowLesson} />;
 }

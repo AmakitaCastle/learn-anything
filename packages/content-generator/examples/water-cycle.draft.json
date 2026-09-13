@@ -1,0 +1,360 @@
+{
+  "draftVersion": "0.1.0",
+  "id": "water-cycle",
+  "title": "一滴水的旅行",
+  "eyebrow": "自然科学 · 水循环 · {duration} 秒",
+  "segments": [
+    {
+      "id": "question",
+      "label": "一滴水的旅行",
+      "text": "雨水从哪里来？又为什么会落回地面？今天跟着一滴水，看看水循环。"
+    },
+    {
+      "id": "evaporation",
+      "label": "蒸发",
+      "text": "太阳把地表的水加热。一部分液态水变成水蒸气，进入空气。这一步叫蒸发。注意，蒸发并不需要先把水烧开。"
+    },
+    {
+      "id": "condensation",
+      "label": "凝结",
+      "text": "水蒸气遇冷后，可以凝结成小水滴。云里还可能有冰晶。所以，云不是一团看得见的水蒸气。"
+    },
+    {
+      "id": "precipitation",
+      "label": "降水",
+      "text": "这些小水滴或冰晶变大，到一定条件时，就会以雨或雪的形式落下。这一步叫降水。"
+    },
+    {
+      "id": "collection",
+      "label": "汇集",
+      "text": "降水落到地面，可以汇入河流和湖泊，也可以渗入地下。水又回到地表和地下，等待下一次蒸发。"
+    },
+    {
+      "id": "summary",
+      "label": "水不断循环",
+      "text": "水循环的关键，不是造出新水，而是水在不同地方和状态之间不断流动。记住四个过程：蒸发、凝结、降水和汇集。这张图只画了一条常见路径，不是水循环的全部。"
+    }
+  ],
+  "presentation": {
+    "titleAt": {
+      "segment": "question",
+      "offset": 0.15
+    },
+    "metaAt": {
+      "segment": "question",
+      "offset": 1.9
+    },
+    "diagramTitleAt": {
+      "segment": "question",
+      "offset": 2.45
+    },
+    "notesTitleAt": {
+      "segment": "question",
+      "offset": 0.8
+    },
+    "ruleAt": {
+      "segment": "question",
+      "offset": 1.5
+    },
+    "diagramTitle": "一条常见的水循环路径",
+    "notesTitle": "4 个过程"
+  },
+  "visuals": [
+    {
+      "id": "water",
+      "grammar": "flow",
+      "config": {
+        "nodes": [
+          {
+            "id": "evaporation",
+            "label": "蒸发",
+            "position": {
+              "x": 25,
+              "y": 27
+            },
+            "at": {
+              "$time": {
+                "segment": "evaporation"
+              }
+            }
+          },
+          {
+            "id": "condensation",
+            "label": "凝结",
+            "position": {
+              "x": 75,
+              "y": 27
+            },
+            "at": {
+              "$time": {
+                "segment": "condensation"
+              }
+            }
+          },
+          {
+            "id": "precipitation",
+            "label": "降水",
+            "position": {
+              "x": 75,
+              "y": 73
+            },
+            "at": {
+              "$time": {
+                "segment": "precipitation"
+              }
+            }
+          },
+          {
+            "id": "collection",
+            "label": "地表与地下",
+            "position": {
+              "x": 25,
+              "y": 73
+            },
+            "at": {
+              "$time": {
+                "segment": "question",
+                "offset": 0.5
+              }
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "rise",
+            "from": "collection",
+            "to": "evaporation"
+          },
+          {
+            "id": "cool",
+            "from": "evaporation",
+            "to": "condensation"
+          },
+          {
+            "id": "fall",
+            "from": "condensation",
+            "to": "precipitation"
+          },
+          {
+            "id": "return",
+            "from": "precipitation",
+            "to": "collection"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "question",
+        "phrase": "雨水从哪里来"
+      },
+      "item": {
+        "id": "question",
+        "text": "雨水从哪里来？",
+        "tone": "label",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "evaporation",
+        "phrase": "变成水蒸气"
+      },
+      "item": {
+        "id": "evaporation",
+        "text": "蒸发：液态水 → 水蒸气",
+        "tone": "accent",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "evaporation",
+        "phrase": "并不需要"
+      },
+      "item": {
+        "id": "boiling",
+        "text": "蒸发不需要先烧开",
+        "tone": "plain",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "condensation",
+        "phrase": "凝结成小水滴"
+      },
+      "item": {
+        "id": "condensation",
+        "text": "凝结：水蒸气 → 小水滴",
+        "tone": "accent",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "condensation",
+        "phrase": "云不是"
+      },
+      "item": {
+        "id": "cloud",
+        "text": "云里有小水滴，也可能有冰晶",
+        "tone": "plain",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "precipitation",
+        "phrase": "落下"
+      },
+      "item": {
+        "id": "precipitation",
+        "text": "降水：雨或雪落回地面",
+        "tone": "accent",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "collection",
+        "phrase": "汇入河流和湖泊"
+      },
+      "item": {
+        "id": "collection",
+        "text": "汇集：地表水与地下水",
+        "tone": "accent",
+        "underline": false
+      }
+    },
+    {
+      "type": "board.write",
+      "when": {
+        "segment": "summary",
+        "phrase": "记住四个过程"
+      },
+      "item": {
+        "id": "summary",
+        "text": "位置与状态改变，水不断循环",
+        "tone": "strong",
+        "underline": true
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "question"
+      },
+      "visualId": "water",
+      "action": "activate",
+      "payload": {
+        "id": "collection"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "evaporation",
+        "phrase": "变成水蒸气"
+      },
+      "visualId": "water",
+      "action": "connect",
+      "payload": {
+        "id": "rise"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "evaporation",
+        "phrase": "变成水蒸气"
+      },
+      "visualId": "water",
+      "action": "activate",
+      "payload": {
+        "id": "evaporation"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "condensation",
+        "phrase": "凝结成小水滴"
+      },
+      "visualId": "water",
+      "action": "connect",
+      "payload": {
+        "id": "cool"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "condensation",
+        "phrase": "凝结成小水滴"
+      },
+      "visualId": "water",
+      "action": "activate",
+      "payload": {
+        "id": "condensation"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "precipitation",
+        "phrase": "落下"
+      },
+      "visualId": "water",
+      "action": "connect",
+      "payload": {
+        "id": "fall"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "precipitation",
+        "phrase": "落下"
+      },
+      "visualId": "water",
+      "action": "activate",
+      "payload": {
+        "id": "precipitation"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "collection",
+        "phrase": "汇入河流和湖泊"
+      },
+      "visualId": "water",
+      "action": "connect",
+      "payload": {
+        "id": "return"
+      }
+    },
+    {
+      "type": "visual",
+      "when": {
+        "segment": "collection",
+        "phrase": "汇入河流和湖泊"
+      },
+      "visualId": "water",
+      "action": "activate",
+      "payload": {
+        "id": "collection"
+      }
+    }
+  ]
+}

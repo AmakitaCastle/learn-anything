@@ -1,0 +1,14 @@
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+body {
+  color: #29262c;
+  font-family: var(--font-hand, 'Kaiti SC'), cursive;
+  background: #f8f6f2;
+}
+body > #root > p {
+  padding: 24px;
+}
