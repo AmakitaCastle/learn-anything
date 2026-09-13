@@ -104,6 +104,7 @@ void test('one terminal entry supports topic, brief, manual, replay and offline 
     parseLessonCommand(['--draft', 'draft.json', '--cached']).values.cached,
   );
   assert.equal(parseLessonCommand(['--play', 'output']).values.play, 'output');
+  assert.ok(!parseLessonCommand(['--demo']).checkOnly);
   for (const args of [
     [],
     ['a', 'b'],
@@ -112,6 +113,10 @@ void test('one terminal entry supports topic, brief, manual, replay and offline 
     ['a', '--cached'],
     ['a', '--cached', '--generate'],
     ['--play', 'x', '--generate'],
+    ['--demo', '--generate'],
+    ['--demo', '--cached'],
+    ['--demo', '--play', 'x'],
+    ['--demo', '水循环'],
     ['a', '--port', '-1'],
     ['a', '--repair-attempts', '3'],
     ['--draft', 'x', '--generate', '--repair-attempts', '1'],

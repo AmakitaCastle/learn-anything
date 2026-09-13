@@ -1,0 +1,17 @@
+learnAnything CLI Demo
+
+Original project code is licensed under Apache License 2.0.
+
+Third-party components and assets retain their own licenses:
+
+- Tegaki rendering and bundled generation code: MIT.
+  Source: https://github.com/gkurt/tegaki
+  Bundled generator notice: packages/content-generator/vendor/LICENSE.tegaki
+  Provenance: packages/content-generator/vendor/README.md
+- Ma Shan Zheng font: SIL Open Font License 1.1.
+  License: packages/content-generator/fonts/OFL.txt
+  Public font copy: public/fonts/OFL-ma-shan-zheng.txt
+- Caveat font supplied by Tegaki: SIL Open Font License 1.1.
+  Its upstream notices are distributed with the Tegaki dependency.
+
+Other npm dependencies retain their upstream licenses and notices.

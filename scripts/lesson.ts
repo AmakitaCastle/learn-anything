@@ -21,10 +21,12 @@ import {
 } from './lesson-workflow.ts';
 import { openLessonBrowser, startLessonViewer } from './lesson-viewer.ts';
 import { formatLessonTaskError } from './lesson-errors.ts';
+import { prepareDemoLesson } from './lesson-demo.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const help = `一条命令：备课 → 编译 → 本地播放
 
+  npm run demo                         无需密钥，播放自带课程
   npm run lesson -- "水循环" --generate
   npm run lesson -- --brief examples/briefs/water-cycle.json --generate
   npm run lesson -- --draft path/to/lesson.draft.json --cached
@@ -50,6 +52,7 @@ export function parseLessonCommand(args: string[]) {
       brief: { type: 'string' },
       draft: { type: 'string' },
       play: { type: 'string' },
+      demo: { type: 'boolean', default: false },
       generate: { type: 'boolean', default: false },
       cached: { type: 'boolean', default: false },
       audience: { type: 'string' },
@@ -84,16 +87,22 @@ export function parseLessonCommand(args: string[]) {
     throw new Error('主题输入重复。');
   const topic = values.topic ?? parsed.positionals[0];
   if (
-    [topic, values.brief, values.draft, values.play].filter(
-      (value) => value !== undefined,
-    ).length !== 1
+    [
+      topic,
+      values.brief,
+      values.draft,
+      values.play,
+      values.demo || undefined,
+    ].filter((value) => value !== undefined).length !== 1
   )
-    throw new Error('请选择主题、需求文件、人工材料或已编译课程中的一个。');
+    throw new Error(
+      '请选择主题、需求文件、人工材料、已编译课程或 Demo 中的一个。',
+    );
   if (values.generate && values.cached)
     throw new Error('生成和缓存模式不能同时使用。');
   if (values.cached && !values.draft) throw new Error('缓存模式需要已有材料。');
   if (
-    values.play &&
+    (values.play || values.demo) &&
     (values.generate ||
       values.cached ||
       values.output ||
@@ -143,7 +152,8 @@ export function parseLessonCommand(args: string[]) {
     port,
     repairs,
     maxOutputTokens,
-    checkOnly: !values.generate && !values.cached && !values.play,
+    checkOnly:
+      !values.generate && !values.cached && !values.play && !values.demo,
   };
 }
 
@@ -159,7 +169,7 @@ export async function main(args = process.argv.slice(2)) {
     return;
   }
   let input: LessonWorkflowInput | undefined;
-  if (!values.play) {
+  if (!values.play && !values.demo) {
     input = values.draft
       ? { draft: await readWorkflowFile(values.draft) }
       : {
@@ -194,8 +204,14 @@ export async function main(args = process.argv.slice(2)) {
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
   let viewer: Awaited<ReturnType<typeof startLessonViewer>> | undefined;
+  let demo: Awaited<ReturnType<typeof prepareDemoLesson>> | undefined;
   try {
     let directory = values.play ? resolve(values.play) : undefined;
+    if (values.demo) {
+      console.log('播放自带升温示例课：不请求模型或语音服务，无需 API Key。');
+      demo = await prepareDemoLesson();
+      directory = demo.directory;
+    }
     if (input) {
       // Validate both configurations and audio tools before any billable work.
       const requiredFields = [
@@ -298,6 +314,7 @@ export async function main(args = process.argv.slice(2)) {
       );
   } finally {
     await viewer?.close();
+    await demo?.close();
     process.off('SIGINT', stop);
     process.off('SIGTERM', stop);
   }

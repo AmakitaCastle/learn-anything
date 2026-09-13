@@ -32,6 +32,10 @@ test('terminal pipeline opens a standalone real MP3 classroom with pause, seek, 
         'utf8',
       ),
     );
+    draft.boardMode = 'full-narration';
+    draft.segments.forEach((segment: { visualId?: string }) => {
+      segment.visualId = draft.visuals[0].id;
+    });
     const audio = createFfmpegAudioProcessor();
     const fixture = await audio.encodeMp3(Buffer.alloc(4 * 48000));
     const result = await runLessonWorkflow(

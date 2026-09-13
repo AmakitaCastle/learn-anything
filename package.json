@@ -12,6 +12,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "demo": "node --conditions=learn-anything-source --experimental-strip-types scripts/lesson.ts --demo",
     "dev": "vinext dev",
     "build": "npm run build:modules && vinext build",
     "build:modules": "npm run build -w @learn-anything/lesson-schema && npm run build -w @learn-anything/lesson-player && npm run build -w @learn-anything/content-generator && npm run build -w @learn-anything/lesson-draft-generator",
@@ -74,5 +75,6 @@
     "vite": "8.0.13",
     "wrangler": "4.92.0"
   },
-  "type": "module"
+  "type": "module",
+  "license": "Apache-2.0"
 }

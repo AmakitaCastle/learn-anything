@@ -107,7 +107,9 @@ export async function startLessonViewer(
         ],
       },
       define: { 'process.env.NODE_ENV': '"production"' },
-      oxc: { jsx: { runtime: 'automatic' } },
+      // The CLI may inherit NODE_ENV=development from its caller. Keep JSX
+      // output consistent with the production React runtime bundled here.
+      oxc: { jsx: { runtime: 'automatic', development: false } },
       css: { postcss: { plugins: [] } },
       build: { outDir: buildDirectory, emptyOutDir: false, sourcemap: false },
     });

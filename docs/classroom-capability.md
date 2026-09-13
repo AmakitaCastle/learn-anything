@@ -6,7 +6,7 @@
 
 本次推进 `v0.1.0 — Classroom Player` 的引擎抽象。上游 TTS、语义锚点和课堂编译仍属于第三阶段；主题生成课程属于第四阶段。本次不实现 AI 备课、不自动发布、不要求 API Key 才能播放示例，也不是 npm 发布流程。
 
-按用户确认的流水线，LLM／人工先生成文稿材料，`content-generator` 编译材料，播放器只消费编译产物。TTS 和对齐保持在编译阶段，不进入播放器；统一 `LessonDraft` 与 `compileLessonDraft()` 通用入口已实现，见[材料与编译说明](./lesson-draft.md)；LLM 自动备课仍待实现。
+按用户确认的流水线，LLM／人工先生成文稿材料，`content-generator` 编译材料，播放器只消费编译产物。TTS 和对齐保持在编译阶段，不进入播放器；统一 `LessonDraft` 与 `compileLessonDraft()` 通用入口已实现，见[材料与编译说明](./lesson-draft.md)；LLM 备课由独立 `lesson-draft-generator` 实现，真实模型稳定性与教学质量仍需验证。
 
 ```text
 已编译 LessonSpec + 音频资源
