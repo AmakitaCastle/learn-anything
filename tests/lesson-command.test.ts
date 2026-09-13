@@ -40,9 +40,16 @@ void test('terminal shows known speech/alignment errors without exposing arbitra
     '时间戳与讲稿不一致。',
     '语音请求失败（HTTP 403），请检查语音密钥与服务权限。',
     '语音合成失败（错误码 45000001），请检查语音权限、额度和音色版本。',
+    '数字不在允许范围内。',
+    '课程音频时长与实测片段总长不一致。',
+    '本地音频处理失败，请检查 FFmpeg/FFprobe 和音频文件。',
   ])
     assert.ok(formatLessonTaskError(new Error(message)).includes(message));
-  for (const message of [secret, `词时间戳无效。${secret}`])
+  for (const message of [
+    secret,
+    `词时间戳无效。${secret}`,
+    `数字不在允许范围内。${secret}`,
+  ])
     assert.ok(!formatLessonTaskError(new Error(message)).includes(secret));
 });
 const fakeDependencies = (): LessonWorkflowDependencies => ({

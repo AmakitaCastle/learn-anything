@@ -9,6 +9,7 @@ import {
   compileLessonDraft,
   compileAlignedLessonDraft,
   createDoubaoSpeechProvider,
+  createFfmpegAudioProcessor,
   type LessonDraft,
   type AlignedDraftSegment,
   type LessonAudioProcessor,
@@ -668,4 +669,76 @@ void test('cache-only provider never spends on a cache miss and alignment report
   } finally {
     await rm(cacheRoot, { recursive: true, force: true });
   }
+});
+
+void test('MP3 narration duration follows PCM samples rather than padded encoding frames', async () => {
+  const processor = createFfmpegAudioProcessor();
+  await processor.prepare?.();
+  // Deliberately not a multiple of an MP3 frame's 576 samples.
+  const samples = 100123;
+  const encoded = await processor.encodeMp3(Buffer.alloc(samples * 2));
+  assert.ok(encoded.audio.length > 0);
+  assert.equal(encoded.duration, 4.171792);
+});
+
+void test('full narration and end anchors survive encoder rounding across six segments', async () => {
+  const draft = parseLessonDraft({
+    ...temperature,
+    boardMode: 'full-narration',
+    segments: Array.from({ length: 6 }, (_, index) => ({
+      id: `seg-${index + 1}`,
+      label: `片段 ${index + 1}`,
+      text: temperature.segments[index % 2].text,
+    })),
+    visuals: [],
+    events: [],
+    presentation: {
+      ...temperature.presentation,
+      ruleAt: { segment: 'seg-6', edge: 'end' },
+    },
+  });
+  const durations = [15.072, 12.048, 16.44, 14.712, 14.256, 16.32];
+  const segments = measured(draft).map((segment, index) => ({
+    ...segment,
+    duration: durations[index],
+  }));
+  // This real sequence sums to 89.59800000000001; the encoder returns 89.598.
+  for (const rounding of [0, -0.0000004, 0.0000004]) {
+    const audio = fakeAudio(segments);
+    const result = await compileLessonDraft(draft, {
+      handwriting: false,
+      speech: {
+        async synthesize(segment) {
+          return {
+            audio: Buffer.from('fixture'),
+            metadata: segments.find((value) => value.id === segment.id)!
+              .metadata,
+            logId: null,
+          };
+        },
+      },
+      audio: {
+        ...audio,
+        async encodeMp3(pcm) {
+          const encoded = await audio.encodeMp3(pcm);
+          return {
+            ...encoded,
+            duration: Math.round(encoded.duration * 1e6) / 1e6 + rounding,
+          };
+        },
+      },
+    });
+    assert.equal(result.lesson.duration, result.report.decodedDuration);
+    assert.equal(result.lesson.teaching!.at(-1)!.endAt, result.lesson.duration);
+    assert.equal(result.lesson.presentation.ruleAt, result.lesson.duration);
+    assert.ok(result.captionsVtt.includes('00:01:29.598'));
+  }
+  assert.throws(
+    () => compileAlignedLessonDraft(draft, segments, { duration: 89 }),
+    /课程音频时长与实测片段总长不一致/,
+  );
+  // A materially early endpoint still fails strict full-narration validation.
+  assert.throws(() =>
+    compileAlignedLessonDraft(draft, segments, { duration: 89.59 }),
+  );
 });

@@ -204,11 +204,11 @@ test('compiled material plays as real MP3, with board and plot actions at return
   page,
 }) => {
   await ready(page);
-  expect(
-    await page
-      .locator('audio')
-      .evaluate((audio) => (audio as HTMLAudioElement).duration),
-  ).toBeCloseTo(compiled.lesson.duration, 1);
+  const nativeDuration = await page
+    .locator('audio')
+    .evaluate((audio) => (audio as HTMLAudioElement).duration);
+  // Some decoders expose MP3 padding; gapless decoders expose PCM duration.
+  expect(Math.abs(nativeDuration - compiled.lesson.duration)).toBeLessThan(0.1);
   const highlight = compiled.lesson.events.find(
     (event) => event.type === 'visual' && event.action === 'highlight',
   )!;

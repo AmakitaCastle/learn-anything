@@ -113,9 +113,11 @@ export class ClassroomClock {
   }
   private sync() {
     this.update({
-      time: this.audio.ended
-        ? this.duration
-        : Math.max(0, Math.min(this.audio.currentTime, this.duration)),
+      // Native media clocks round to microseconds; preserve exact end events.
+      time:
+        this.audio.ended || this.audio.currentTime >= this.duration - 0.000001
+          ? this.duration
+          : Math.max(0, Math.min(this.audio.currentTime, this.duration)),
       playing: !this.audio.paused && !this.audio.ended && !this.snapshot.error,
       speed: this.audio.playbackRate,
       muted: this.audio.muted,

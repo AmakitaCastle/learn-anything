@@ -103,7 +103,7 @@ export function createFfmpegAudioProcessor(
           ],
           wav,
         );
-        const duration = Number(
+        const containerDuration = Number(
           (
             await run(ffprobe, [
               '-v',
@@ -120,11 +120,17 @@ export function createFfmpegAudioProcessor(
         );
         await run(ffmpeg, ['-v', 'error', '-i', target, '-f', 'null', '-']);
         if (
-          !Number.isFinite(duration) ||
-          duration <= 0 ||
-          Math.abs(duration - pcm.length / PCM_BYTES_PER_SECOND) > 0.1
+          !Number.isFinite(containerDuration) ||
+          containerDuration <= 0 ||
+          Math.abs(containerDuration - pcm.length / PCM_BYTES_PER_SECOND) > 0.1
         )
           throw new Error('编码后的音频时长与实测采样不一致。');
+        // MP3 packet duration includes encoder delay/padding. Gapless decoders
+        // trim it, so it cannot be the end of the narrated timeline. Use the
+        // measured input samples, expressed at browser microsecond precision.
+        const duration =
+          Math.round((pcm.length / PCM_BYTES_PER_SECOND) * 1_000_000) /
+          1_000_000;
         return { audio: await readFile(target), duration };
       } finally {
         // Only this invocation's newly allocated directory is removed.

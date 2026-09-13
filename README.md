@@ -2,7 +2,7 @@
 
 输入一个主题，在本地生成一堂包含语音、动态板书和概念动画的课程。
 
-[下载 v0.1.0-demo](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo) · [GitHub 仓库](https://github.com/AmakitaCastle/learn-anything)
+[下载 v0.1.0-demo.1](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo.1) · [GitHub 仓库](https://github.com/AmakitaCastle/learn-anything)
 
 ```text
 LLM → LessonDraft 0.1.0 → compileLessonDraft()

@@ -139,3 +139,15 @@ void test('pending play cannot revive a paused or disposed player and instances 
   assert.equal(audio.paused, true);
   other.destroy();
 });
+
+void test('native microsecond rounding reaches the exact end without hiding missing audio', () => {
+  const audio = new FakeAudio();
+  const clock = new ClassroomClock(audio, 10.0000004, new FakeScheduler());
+  clock.seek(10);
+  assert.equal(clock.getSnapshot().time, 10.0000004);
+  clock.seek(9.94);
+  assert.equal(clock.getSnapshot().time, 9.94);
+  clock.seek(0);
+  assert.equal(clock.getSnapshot().time, 0);
+  clock.destroy();
+});

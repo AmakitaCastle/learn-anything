@@ -97,14 +97,19 @@ export function compileAlignedLessonDraft(
     cursor += segment.duration + (index < segments.length - 1 ? pause : 0);
     return value;
   });
-  const duration = options.duration ?? cursor;
+  const audioDuration = options.duration ?? cursor;
   if (
-    !Number.isFinite(duration) ||
-    duration <= 0 ||
-    duration > 7200 ||
-    Math.abs(duration - cursor) > 0.1
+    !Number.isFinite(audioDuration) ||
+    audioDuration <= 0 ||
+    audioDuration > 7200 ||
+    Math.abs(audioDuration - cursor) > 0.1
   )
     throw new Error('课程音频时长与实测片段总长不一致。');
+  // Encoders may round the measured samples to microseconds. Keep the same
+  // endpoint as the segment/anchor timeline for differences at that precision,
+  // including floating-point addition drift across multiple segments.
+  const duration =
+    Math.abs(audioDuration - cursor) <= 0.000001 ? cursor : audioDuration;
   const anchors: CompileReport['anchors'] = [];
   const resolve = (when: LessonAnchor, target: string) => {
     const segment = aligned.find((segment) => segment.id === when.segment)!;
