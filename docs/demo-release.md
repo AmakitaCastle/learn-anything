@@ -52,7 +52,7 @@ GitHub 首次发布时：创建公开仓库、推送源码、启用 CI、以 `v0
 - 将发布的源码文件及现有 Git 历史未匹配到当前本地配置中的凭证；归档排除本地配置、依赖、运行缓存和 Git 目录。
 - README 使用实际课堂截图。未请求付费文本模型或语音接口。
 
-GitHub 已发布：[公开仓库](https://github.com/AmakitaCastle/learn-anything)、[v0.1.0-demo Release](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo)。Release 包含源码归档和 SHA-256 校验文件，对应代码提交 `87a98b6`。GitHub Linux CI 已启动，结果在下方补充；Windows 尚未实机验收。
+GitHub 已发布：[公开仓库](https://github.com/AmakitaCastle/learn-anything)、[v0.1.0-demo Release](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo)。Release 包含源码归档和 SHA-256 校验文件，对应代码提交 `87a98b6`。首次 Linux CI 问题及修订版结果见下方；Windows 尚未实机验收。
 
 ## 首次 GitHub CI 修正
 
@@ -65,3 +65,9 @@ GitHub 已发布：[公开仓库](https://github.com/AmakitaCastle/learn-anythin
 首次 Linux 浏览器检查发现新编译 MP3 的 FFprobe 容器时长包含编码器延迟和填充，比 Chromium 的 gapless 播放时长多约 0.06 秒，导致跳转结尾不到达课程终点。编译器改为以实际输入 PCM 采样时长确定课程终点，保留编码完整性与容器时长偏差检查。浏览器检查容许解码器暴露不足 0.1 秒的编码填充，并继续验证终点板书和动画状态；新增实际 FFmpeg 非整帧采样回归测试。
 
 播放器将不足一微秒的原生媒体时钟舍入统一到精确课程终点，保证结束锚点可达；超过该精度的未播放区间保持原样。同期“排查课程语音合成失败”任务的多段浮点精度修复与安全错误提示一并纳入修订版。
+
+## 修订版发布验收（2026-09-13）
+
+`v0.1.0-demo.1` 对应代码提交 `67c6b69`。[Linux 全量 CI](https://github.com/AmakitaCastle/learn-anything/actions/runs/34753011387) 通过：100 项测试、31 项 Chromium 浏览器测试、根项目及业务模块类型检查、代码检查、生产构建和仓库外模块复用。源码归档在干净目录安装成功，无密钥、无音频工具、无缓存时，原生 MP3 播放、暂停与最终圈画／图形状态均通过。
+
+[下载修订版](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo.1)，附源码包与 SHA-256 校验文件。旧版本保留原标签和产物。
