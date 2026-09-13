@@ -95,7 +95,9 @@ void test(
       );
       run('npm', [
         'install',
-        '--offline',
+        // npm ci caches tarballs without necessarily caching registry metadata.
+        // Keep exact lockfile overrides, but permit metadata on a cold runner.
+        '--prefer-offline',
         '--ignore-scripts',
         '--no-audit',
         '--no-fund',
