@@ -8,21 +8,21 @@
 
 `examples/briefs/water-cycle.json` 是可直接使用的需求文件。
 
-| 字段 | 规则 |
-| --- | --- |
-| `id/topic/audience` | 必填，输出课程 ID 必须与需求一致 |
-| `language` | 默认 `zh-CN` |
-| `objectives` | 可选学习目标，最多 20 条 |
-| `sourceMaterial` | 可选参考文本，最多 50000 字符；作为不可信资料而非系统指令 |
-| `segmentCount` | 默认 6，范围 1–20；生成后强制核对 |
-| `targetDurationSeconds` | 可选 15–1800 秒，仅指导篇幅；实际时长由编译器测量 |
-| `allowedGrammars` | 默认四种内置语法，可缩小范围；不适合画图可仅生成板书 |
+| 字段                    | 规则                                                      |
+| ----------------------- | --------------------------------------------------------- |
+| `id/topic/audience`     | 必填，输出课程 ID 必须与需求一致                          |
+| `language`              | 默认 `zh-CN`                                              |
+| `objectives`            | 可选学习目标，最多 20 条                                  |
+| `sourceMaterial`        | 可选参考文本，最多 50000 字符；作为不可信资料而非系统指令 |
+| `segmentCount`          | 默认 6，范围 1–20；生成后强制核对                         |
+| `targetDurationSeconds` | 可选 15–1800 秒，仅指导篇幅；实际时长由编译器测量         |
+| `allowedGrammars`       | 默认四种内置语法，可缩小范围；不适合画图可仅生成板书      |
 
 材料协议、短语锚点与动画数据规则见[LessonDraft 格式](./lesson-draft.md)。提示合同要求输出可朗读旁白、分步板书、纯数据动画和来自旁白的短语锚点。资料隔离是提示层防护，不承诺完全抵抗提示注入；调用者应审核资料和知识，不向模型提供密钥或无权外发的内容。
 
 ## 板书过程与多图设计
 
-提示版本 `0.3.0` 默认使用全文板书：完整旁白逐句、随语音逐字书写，已讲过的全文保留。模型指定每段的 `visualId` 和局部 `emphasis`；每张图必须有对应完整讲解，纯文字课不要求额外的 `board.write`。新生成材料缺少全文模式、图文关联或图示动作会被拒绝。整句、跨句与重叠重点也会被拒绝。
+提示版本 `0.4.0` 默认使用全文板书：完整旁白逐句、随语音逐字书写，已讲过的全文保留。模型指定每段的 `visualId` 和局部 `emphasis`；每张图必须有对应完整讲解，纯文字课不要求额外的 `board.write`。新生成材料缺少全文模式、图文关联或图示动作会被拒绝。整句、跨句与重叠重点也会被拒绝。
 
 复杂概念通常拆成 2–4 个互补图；每段围绕一张图，多个段可以关联同一图，图数不能超过讲解段数。旁白需要包含完整条件、操作、中间结果和结论，不能因为全文展示而省略推导。播放器将图文成组排列，跟随当前讲解滚动；用户回看时暂停自动跟随。
 
@@ -39,11 +39,11 @@ LESSON_LLM_API_KEY=在本地填写
 LESSON_LLM_BASE_URL=https://api.openai.com/v1
 ```
 
-| 协议 | 默认根地址 | 接口与认证 |
-| --- | --- | --- |
-| `openai-compatible` | `https://api.openai.com/v1` | `/chat/completions`，Bearer，默认 JSON mode 与 `max_completion_tokens` |
-| `anthropic` | `https://api.anthropic.com/v1` | `/messages`，`x-api-key`、版本头与 `max_tokens` |
-| `gemini` | `https://generativelanguage.googleapis.com/v1beta` | `/models/<model>:generateContent`，`x-goog-api-key`、JSON MIME |
+| 协议                | 默认根地址                                         | 接口与认证                                                             |
+| ------------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| `openai-compatible` | `https://api.openai.com/v1`                        | `/chat/completions`，Bearer，默认 JSON mode 与 `max_completion_tokens` |
+| `anthropic`         | `https://api.anthropic.com/v1`                     | `/messages`，`x-api-key`、版本头与 `max_tokens`                        |
+| `gemini`            | `https://generativelanguage.googleapis.com/v1beta` | `/models/<model>:generateContent`，`x-goog-api-key`、JSON MIME         |
 
 实现合同分别核对 [OpenAI Chat API](https://developers.openai.com/api/reference/resources/chat)、[Anthropic Messages API](https://platform.claude.com/docs/en/api/messages/create) 和 [Gemini GenerateContent API](https://ai.google.dev/api/generate-content)。本模块采用可跨厂商使用的 JSON mode 加本地完整校验，不把 JSON mode 等同于完整协议保证，也未实现供应商专属的 strict JSON Schema 功能。
 
@@ -84,9 +84,13 @@ npm run lesson:compile -- --draft outputs/drafts/<id>/<hash>/lesson.draft.json
 ## 扩展接口
 
 ```ts
-import { generateLessonDraft, type LessonDraftProvider } from '@learn-anything/lesson-draft-generator';
+import {
+  generateLessonDraft,
+  type LessonDraftProvider,
+} from '@learn-anything/lesson-draft-generator';
 const provider: LessonDraftProvider = {
-  id: 'my-provider', model: 'my-model',
+  id: 'my-provider',
+  model: 'my-model',
   async generate({ system, messages, signal }) {
     // 调用你的模型 SDK，传入 signal，检查拒绝/截断，返回最终材料文本。
     return { text: await myModelSdk.generate({ system, messages, signal }) };
@@ -103,3 +107,7 @@ const result = await generateLessonDraft(brief, { provider });
 离线传输夹具覆盖三个协议的认证、消息、token 上限及响应解析，覆盖人工导入、全文模式与图文关联、重点范围、锚点/动作拒绝、备课约束、显式修复、超时、取消、响应大小、错误脱敏、CLI 离线预检和防覆盖。生成结果接入未修改的完整编译器；这里的新增集成使用语音和音频适配器夹具，不冒充真实付费模型或 MP3 合成验证。生产包集成测试同时覆盖仓库外生成模块 → 编译 → 播放器状态还原。
 
 协议校验通过不等于知识正确、语言和受众完全符合要求、教学效果达标。生成报告始终 `humanReview: 'pending'`。实际词边界可能改变动作顺序，最终状态转换、板书删除顺序及音频越界仍以编译器复核为准。人工审稿、真实供应商账号联调、试听、更多主题教学评估、RAG、自动工具检索和新的动画语法不在此次离线验证内。
+
+## 扩展表现能力
+
+生成器通过可注入的 `CapabilityRegistry` 读取允许能力、配置与动作说明，提示不再写死语法清单。仓库宿主额外提供 `scene`，新增包在统一入口注册后自动进入备课范围。独立使用未传能力表时继续提供原四种能力。接口和时间字段规则见[能力包规范](./capability-packs.md)。

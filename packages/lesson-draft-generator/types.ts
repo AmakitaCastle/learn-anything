@@ -1,12 +1,10 @@
-import type { LessonDraft } from '@learn-anything/lesson-schema';
+import {
+  builtinCapabilities,
+  type LessonDraft,
+} from '@learn-anything/lesson-schema';
 
-export const draftGrammars = [
-  'flow',
-  'state-transition',
-  'plot',
-  'array-search',
-] as const;
-export type DraftGrammar = (typeof draftGrammars)[number];
+export const draftGrammars: string[] = [...builtinCapabilities.keys()];
+export type DraftGrammar = string;
 export type LessonBrief = {
   id: string;
   topic: string;

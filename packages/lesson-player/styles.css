@@ -1452,7 +1452,10 @@
   top: 30px;
   align-self: start;
   min-width: 0;
-  height: 380px;
+  /* Intrinsic renderers can exceed the legacy diagram height. Reserve their
+     full content height so stacked narration never starts inside the visual. */
+  height: auto;
+  min-height: 380px;
 }
 .classroom-shell .teaching-diagram .grammar-graph,
 .classroom-shell .teaching-diagram .grammar-plot {
@@ -1518,7 +1521,7 @@
   .classroom-shell .teaching-diagram {
     position: relative;
     top: 0;
-    height: 260px;
+    min-height: 260px;
   }
   .classroom-shell .teaching-diagram .grammar-plot,
   .classroom-shell .teaching-diagram .grammar-graph {

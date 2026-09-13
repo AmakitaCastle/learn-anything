@@ -1,3 +1,4 @@
+import { lessonCapabilities } from '../capabilities/index.ts';
 // Host orchestration: the three business modules remain independent.
 import { randomUUID, createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -37,15 +38,18 @@ export function topicBrief(
     targetDurationSeconds?: number;
   } = {},
 ): LessonBrief {
-  return parseLessonBrief({
-    id:
-      options.id ??
-      `lesson-${createHash('sha256').update(topic).digest('hex').slice(0, 12)}`,
-    topic,
-    audience: options.audience ?? '没有相关基础的普通学习者',
-    segmentCount: options.segmentCount ?? 6,
-    targetDurationSeconds: options.targetDurationSeconds ?? 90,
-  });
+  return parseLessonBrief(
+    {
+      id:
+        options.id ??
+        `lesson-${createHash('sha256').update(topic).digest('hex').slice(0, 12)}`,
+      topic,
+      audience: options.audience ?? '没有相关基础的普通学习者',
+      segmentCount: options.segmentCount ?? 6,
+      targetDurationSeconds: options.targetDurationSeconds ?? 90,
+    },
+    lessonCapabilities,
+  );
 }
 
 export async function runLessonWorkflow(
@@ -57,8 +61,14 @@ export async function runLessonWorkflow(
   },
   dependencies: LessonWorkflowDependencies,
 ): Promise<{ directory: string; duration: number }> {
-  const brief = 'brief' in input ? parseLessonBrief(input.brief) : undefined;
-  const manual = 'draft' in input ? importLessonDraft(input.draft) : undefined;
+  const brief =
+    'brief' in input
+      ? parseLessonBrief(input.brief, lessonCapabilities)
+      : undefined;
+  const manual =
+    'draft' in input
+      ? importLessonDraft(input.draft, lessonCapabilities)
+      : undefined;
   if (brief && !dependencies.provider) throw new Error('模型配置缺失。');
   const repairs = options.maxRepairAttempts ?? 0;
   if (!Number.isInteger(repairs) || repairs < 0 || repairs > 2)
@@ -85,6 +95,7 @@ export async function runLessonWorkflow(
     manual ??
     (await generateLessonDraft(brief, {
       provider: dependencies.provider!,
+      capabilities: lessonCapabilities,
       maxRepairAttempts: repairs,
       signal: dependencies.signal,
     }));
@@ -99,6 +110,7 @@ export async function runLessonWorkflow(
   );
   dependencies.onStage?.('compile', directory);
   const compiled = await compileLessonDraft(generated.draft, {
+    capabilities: lessonCapabilities,
     speech: {
       async synthesize(segment) {
         check();

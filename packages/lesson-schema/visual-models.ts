@@ -353,10 +353,13 @@ export const builtinVisualModels: ReadonlyMap<string, VisualModel> = new Map(
 );
 export function validateBuiltinVisuals(
   lesson: LessonSpec,
-  options: { checkState?: boolean } = {},
+  options: {
+    checkState?: boolean;
+    registry?: ReadonlyMap<string, VisualModel>;
+  } = {},
 ): void {
   const visuals = lesson.visuals.map((visual) => {
-    const model = builtinVisualModels.get(visual.grammar);
+    const model = (options.registry ?? builtinVisualModels).get(visual.grammar);
     if (!model) throw new Error('未注册动画语法：' + visual.grammar);
     const config = model.parseConfig(visual.config, lesson.duration);
     return { id: visual.id, model, config, state: model.initial(config) };

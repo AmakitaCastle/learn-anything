@@ -1,6 +1,7 @@
 import {
   parseLessonDraft,
   type LessonDraft,
+  type CapabilityRegistry,
 } from '@learn-anything/lesson-schema';
 import { buildLessonDraftPrompt } from './prompt.ts';
 import { validationDiagnostic } from './diagnostics.ts';
@@ -12,7 +13,10 @@ import {
   type LessonDraftProvider,
 } from './types.ts';
 
-export function parseLessonDraftOutput(value: unknown): LessonDraft {
+export function parseLessonDraftOutput(
+  value: unknown,
+  capabilities?: CapabilityRegistry,
+): LessonDraft {
   if (typeof value === 'string') {
     if (value.length > 1_000_000) throw new Error('模型材料过长。');
     const source = value.trim();
@@ -23,7 +27,7 @@ export function parseLessonDraftOutput(value: unknown): LessonDraft {
       throw new Error('材料必须是单个完整 JSON 对象。');
     }
   }
-  return parseLessonDraft(value);
+  return parseLessonDraft(value, capabilities);
 }
 
 function artifacts(
@@ -32,9 +36,12 @@ function artifacts(
 ): DraftGenerationResult {
   return { draft, draftJson: JSON.stringify(draft, null, 2) + '\n', report };
 }
-export function importLessonDraft(value: unknown): DraftGenerationResult {
+export function importLessonDraft(
+  value: unknown,
+  capabilities?: CapabilityRegistry,
+): DraftGenerationResult {
   try {
-    return artifacts(parseLessonDraftOutput(value), {
+    return artifacts(parseLessonDraftOutput(value, capabilities), {
       source: 'manual',
       attempts: 0,
       humanReview: 'pending',
@@ -64,6 +71,7 @@ export async function generateLessonDraft(
   value: unknown,
   options: {
     provider: LessonDraftProvider;
+    capabilities?: CapabilityRegistry;
     maxRepairAttempts?: number;
     signal?: AbortSignal;
   },
@@ -73,7 +81,7 @@ export async function generateLessonDraft(
   let model: string;
   const repairs = options.maxRepairAttempts ?? 0;
   try {
-    prompt = buildLessonDraftPrompt(value);
+    prompt = buildLessonDraftPrompt(value, options.capabilities);
     providerId = safeLabel(options.provider.id);
     model = safeLabel(options.provider.model);
     if (typeof options.provider.generate !== 'function')
@@ -124,7 +132,7 @@ export async function generateLessonDraft(
     try {
       if (typeof response.text !== 'string')
         throw new Error('模型返回非文本材料。');
-      draft = parseLessonDraftOutput(response.text);
+      draft = parseLessonDraftOutput(response.text, options.capabilities);
       if (draft.id !== prompt.brief.id)
         throw new Error('材料 id 必须等于 brief.id。');
       if (draft.segments.length !== prompt.brief.segmentCount)

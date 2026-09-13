@@ -1,3 +1,4 @@
+import { lessonCapabilities } from '../capabilities/index.ts';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -68,10 +69,14 @@ async function main() {
     throw new Error('输出 token 上限必须为正整数。');
   let result;
   if (values.draft) {
-    result = importLessonDraft(await readFile(resolve(values.draft), 'utf8'));
+    result = importLessonDraft(
+      await readFile(resolve(values.draft), 'utf8'),
+      lessonCapabilities,
+    );
   } else {
     const { brief } = buildLessonDraftPrompt(
       JSON.parse(await readFile(resolve(values.brief!), 'utf8')),
+      lessonCapabilities,
     );
     if (!values.generate) {
       console.log(
@@ -91,6 +96,7 @@ async function main() {
       `开始材料生成，最多 ${repairs + 1} 次模型请求（可能消耗额度）；不自动切换供应商。`,
     );
     result = await generateLessonDraft(brief, {
+      capabilities: lessonCapabilities,
       provider,
       maxRepairAttempts: repairs,
     });

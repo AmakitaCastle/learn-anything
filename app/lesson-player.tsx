@@ -1,5 +1,7 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { loadLessonVisualRegistry } from '../capabilities/player.ts';
+import type { VisualRegistry } from '@learn-anything/lesson-player/runtime';
+import { useEffect, useRef, useState } from 'react';
 import {
   ClassroomPlayer,
   type ClassroomHandle,
@@ -8,6 +10,25 @@ import type { LessonSpec } from '@learn-anything/lesson-schema';
 // Demo integration only. The reusable player never registers global tools.
 export default function LessonPlayer({ lesson }: { lesson: LessonSpec }) {
   const ref = useRef<ClassroomHandle>(null);
+  const [loaded, setLoaded] = useState<{
+    lesson: LessonSpec;
+    registry: VisualRegistry;
+  } | null>(null);
+  const [failedFor, setFailedFor] = useState<LessonSpec | null>(null);
+  const registry = loaded?.lesson === lesson ? loaded.registry : null;
+  useEffect(() => {
+    let active = true;
+    loadLessonVisualRegistry(lesson.visuals.map((visual) => visual.grammar))
+      .then((value) => {
+        if (active) setLoaded({ lesson, registry: value });
+      })
+      .catch(() => {
+        if (active) setFailedFor(lesson);
+      });
+    return () => {
+      active = false;
+    };
+  }, [lesson]);
   useEffect(() => {
     const context = (
       document as Document & {
@@ -62,5 +83,8 @@ export default function LessonPlayer({ lesson }: { lesson: LessonSpec }) {
     ).catch(() => undefined);
     return () => lifecycle.abort();
   }, [lesson]);
-  return <ClassroomPlayer ref={ref} lesson={lesson} />;
+  if (failedFor === lesson)
+    return <p role="alert">课程绘制能力载入失败，请刷新页面。</p>;
+  if (!registry) return <output>正在准备课程画面…</output>;
+  return <ClassroomPlayer ref={ref} lesson={lesson} registry={registry} />;
 }

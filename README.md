@@ -50,12 +50,12 @@ cp -n .env.example .env.local
 
 在 `.env.local` 中填写：
 
-| 配置 | 用途 |
-| --- | --- |
-| `LESSON_LLM_PROVIDER / LESSON_LLM_MODEL / LESSON_LLM_API_KEY` | 文本模型生成课程材料 |
-| `LESSON_LLM_BASE_URL` | 可选兼容接口根地址，包含版本路径，不包含动作路径 |
-| `DOUBAO_SPEECH_API_KEY / DOUBAO_TTS_RESOURCE_ID / DOUBAO_TTS_SPEAKER` | 语音合成，需要与账号权限和音色版本匹配 |
-| `DOUBAO_TTS_SPEECH_RATE` | 合成语速，默认 0 |
+| 配置                                                                  | 用途                                             |
+| --------------------------------------------------------------------- | ------------------------------------------------ |
+| `LESSON_LLM_PROVIDER / LESSON_LLM_MODEL / LESSON_LLM_API_KEY`         | 文本模型生成课程材料                             |
+| `LESSON_LLM_BASE_URL`                                                 | 可选兼容接口根地址，包含版本路径，不包含动作路径 |
+| `DOUBAO_SPEECH_API_KEY / DOUBAO_TTS_RESOURCE_ID / DOUBAO_TTS_SPEAKER` | 语音合成，需要与账号权限和音色版本匹配           |
+| `DOUBAO_TTS_SPEECH_RATE`                                              | 合成语速，默认 0                                 |
 
 配置好后：
 
@@ -101,19 +101,19 @@ npm run lesson -- --help
 
 ## 第一版范围与实现
 
-LLM 生成受约束的材料与语义锚点，编译器根据真实语音词时间戳确定事件时间；播放器只消费编译产物。内置数组查找、流程、状态转换和曲线四种动画语法。课程不执行模型生成的 HTML、JavaScript 或组件。
+LLM 生成受约束的材料与语义锚点，编译器根据真实语音词时间戳确定事件时间；播放器只消费编译产物。内置数组查找、流程、状态转换和曲线四种动画语法；宿主另注册通用二维情境动画 `scene`，用人物、物件、气泡和区域呈现情境与概念变化。课程不执行模型生成的 HTML、JavaScript 或组件。
 
 新材料使用全文板书，保留讲解过程，关联图示并跟随当前讲解滚动。手写路径由字体轮廓生成，不保证规范汉字笔顺；缺字符局部回退。知识正确性、声音自然度和低置信度词需人工检查。
 
 本版聚焦主题生成、本地编译与本地播放；文件解析／RAG、账户、在线服务、学习画像和互动追问列入后续路线图。macOS 已做本地验证，Linux 由 CI 复核；Windows 尚未做实机验收。
 
-| 模块 | 职责 |
-| --- | --- |
-| `packages/lesson-draft-generator` | 模型适配、人工导入、材料校验 |
-| `packages/content-generator` | TTS、MP3、真实时间对齐与课程编译 |
-| `packages/lesson-player` | 音频时钟、板书、动画和播放控制 |
-| `packages/lesson-schema` | LessonDraft／LessonSpec 0.1.0 公共协议 |
-| `scripts/`、`viewer/` | 终端编排与独立本地播放宿主 |
+| 模块                              | 职责                                   |
+| --------------------------------- | -------------------------------------- |
+| `packages/lesson-draft-generator` | 模型适配、人工导入、材料校验           |
+| `packages/content-generator`      | TTS、MP3、真实时间对齐与课程编译       |
+| `packages/lesson-player`          | 音频时钟、板书、动画和播放控制         |
+| `packages/lesson-schema`          | LessonDraft／LessonSpec 0.1.0 公共协议 |
+| `scripts/`、`viewer/`             | 终端编排与独立本地播放宿主             |
 
 模块互不依赖，只共享协议。原网页开发入口 `npm run dev` 保留水循环及二分查找等回归示例。
 
@@ -133,7 +133,9 @@ npm run test:browser
 
 - [架构](./docs/module-architecture.md) · [课程材料与编译](./docs/lesson-draft.md)
 - [播放器接口](./docs/classroom-capability.md) · [动画扩展](./docs/visual-grammars.md)
+- [能力包扩展规范](./docs/capability-packs.md) · [文科情境动画样例](./examples/task-separation/README.md)
 - [全文板书](./docs/full-board.md) · [手写资源](./docs/handwriting-resources.md)
+- [Git 与 CLI 自动发布](./docs/ci-cd.md)
 - [首版发布与验收](./docs/demo-release.md) · [路线图](./ROADMAP.md)
 - [贡献指南](./CONTRIBUTING.md) · [安全说明](./SECURITY.md)
 

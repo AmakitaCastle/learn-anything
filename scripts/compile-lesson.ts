@@ -1,3 +1,4 @@
+import { lessonCapabilities } from '../capabilities/index.ts';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -45,6 +46,7 @@ async function main() {
     throw new Error('--cached 和 --generate 只能选择一个。');
   const draft = parseLessonDraft(
     JSON.parse(await readFile(resolve(values.draft), 'utf8')),
+    lessonCapabilities,
   );
   console.log(
     `材料有效：${draft.title}；${draft.segments.length} 个旁白片段，${draft.events.length} 个板书／动画动作。`,
@@ -56,6 +58,7 @@ async function main() {
     return;
   }
   const compiled = await compileLessonDraft(draft, {
+    capabilities: lessonCapabilities,
     handwriting: createTegakiHandwritingProvider({
       cacheRoot: resolve('outputs/handwriting'),
     }),

@@ -1,5 +1,7 @@
 # 如何新增动画语法
 
+需要让备课、校验、编译和播放共同识别的新能力，请按[能力包规范](./capability-packs.md)新增目录并在宿主注册一次。本文下方的 `VisualGrammar` 接口适用于仅扩展独立播放器；只注册 Renderer 不会自动扩展上游备课和时间字段。
+
 课程只能引用注册的语法 ID 与纯 JSON，不能携带 React 组件或执行脚本。插件是开发者编写并受审查的代码，不是模型输出。
 
 ## 最小定义
@@ -7,7 +9,9 @@
 ```tsx
 import { number } from '@learn-anything/lesson-schema';
 import {
-  createVisualRegistry, registerGrammar, type VisualGrammar,
+  createVisualRegistry,
+  registerGrammar,
+  type VisualGrammar,
   ClassroomPlayer,
 } from '@learn-anything/lesson-player';
 import { defaultVisualRegistry } from '@learn-anything/lesson-player/grammars';
@@ -26,7 +30,8 @@ const counter: VisualGrammar<null, { value: number }, number> = {
 };
 
 const registry = createVisualRegistry([
-  ...defaultVisualRegistry.values(), registerGrammar(counter),
+  ...defaultVisualRegistry.values(),
+  registerGrammar(counter),
 ]);
 // <ClassroomPlayer lesson={lesson} registry={registry} />
 ```
@@ -38,10 +43,15 @@ const registry = createVisualRegistry([
 ```json
 {
   "visuals": [{ "id": "count", "grammar": "counter", "config": null }],
-  "events": [{
-    "at": 2, "type": "visual", "visualId": "count",
-    "action": "set", "payload": 3
-  }]
+  "events": [
+    {
+      "at": 2,
+      "type": "visual",
+      "visualId": "count",
+      "action": "set",
+      "payload": 3
+    }
+  ]
 }
 ```
 
@@ -64,7 +74,11 @@ const registry = createVisualRegistry([
 
 ```json
 {
-  "points": [{ "x": 0, "y": 20 }, { "x": 1, "y": 40 }, { "x": 2, "y": 50 }],
+  "points": [
+    { "x": 0, "y": 20 },
+    { "x": 1, "y": 40 },
+    { "x": 2, "y": 50 }
+  ],
   "xLabel": "时间（分钟）",
   "yLabel": "温度（摄氏度）",
   "xAxis": { "min": 0, "max": 2, "ticks": [0, 1, 2] },

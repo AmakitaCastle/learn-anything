@@ -1,3 +1,4 @@
+import { lessonCapabilities } from '../capabilities/index.ts';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -174,7 +175,10 @@ export async function main(args = process.argv.slice(2)) {
       ? { draft: await readWorkflowFile(values.draft) }
       : {
           brief: values.brief
-            ? parseLessonBrief(await readWorkflowFile(values.brief))
+            ? parseLessonBrief(
+                await readWorkflowFile(values.brief),
+                lessonCapabilities,
+              )
             : topicBrief(topic!, {
                 id: values.id,
                 audience: values.audience,
@@ -186,7 +190,7 @@ export async function main(args = process.argv.slice(2)) {
                   : { targetDurationSeconds: Number(values.duration) }),
               }),
         };
-    if ('draft' in input) importLessonDraft(input.draft);
+    if ('draft' in input) importLessonDraft(input.draft, lessonCapabilities);
     if (checkOnly) {
       console.log(
         '输入有效。仅离线预检：不请求模型或语音、不处理音频、不写文件、不启动播放器。',

@@ -30,14 +30,18 @@ lesson-player（React，下游）
 app + examples（集成演示，不属于三个业务模块的核心）
 ```
 
+## 统一能力扩展
+
+宿主 `capabilities/index.ts` 注册能力包，向三个独立模块注入同一份纯数据规则、备课说明和时间字段，向浏览器注入对应绘制入口。模块仍只依赖共享协议，不导入宿主或彼此。现有默认能力兼容保留，新增 `scene` 在自己的目录内实现；后续增加表现能力采用“新增目录＋注册一项”。完整接口与边界见[能力包规范](./capability-packs.md)。
+
 ## 项目边界
 
-| 子项目 | 输入与输出 | 不负责 |
-| --- | --- | --- |
-| `packages/lesson-draft-generator` | 备课需求／人工材料 → 校验后的 `LessonDraft` 与生成报告 | TTS、音频、文件托管、React、动画渲染、知识正确性保证 |
-| `packages/lesson-player` | 已编译 `LessonSpec`、媒体地址 → 同步课堂组件与控制接口 | 生成讲稿、调用 TTS、读密钥、猜测事件时间 |
-| `packages/content-generator` | `LessonDraft` 与编译配置 → 课程 JSON、连续 MP3、字幕、实测报告 | AI 创作文稿、React 页面、动画渲染、播放时钟、实时播放控制 |
-| `packages/lesson-schema` | 材料／产物纯数据协议、运行时校验、共用动画状态规则；供三个业务模块依赖 | Provider、播放器组件、教学策略 |
+| 子项目                            | 输入与输出                                                             | 不负责                                                    |
+| --------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
+| `packages/lesson-draft-generator` | 备课需求／人工材料 → 校验后的 `LessonDraft` 与生成报告                 | TTS、音频、文件托管、React、动画渲染、知识正确性保证      |
+| `packages/lesson-player`          | 已编译 `LessonSpec`、媒体地址 → 同步课堂组件与控制接口                 | 生成讲稿、调用 TTS、读密钥、猜测事件时间                  |
+| `packages/content-generator`      | `LessonDraft` 与编译配置 → 课程 JSON、连续 MP3、字幕、实测报告         | AI 创作文稿、React 页面、动画渲染、播放时钟、实时播放控制 |
+| `packages/lesson-schema`          | 材料／产物纯数据协议、运行时校验、共用动画状态规则；供三个业务模块依赖 | Provider、播放器组件、教学策略                            |
 
 三个业务项目互不依赖，只依赖共享协议。播放器把板书、字体资源、默认动画语法和控件收在自己的目录，样式也可单独导入，不依赖 `app/`、`components/`、`lib/` 或演示应用的 Tailwind 配置。中文原字形和笔画资源保持不变；宿主可继续提供原来的 `--font-hand` 字体变量。
 
@@ -106,7 +110,10 @@ npm run build
 
 ```tsx
 'use client';
-import { ClassroomPlayer, type LessonSpec } from '@learn-anything/lesson-player';
+import {
+  ClassroomPlayer,
+  type LessonSpec,
+} from '@learn-anything/lesson-player';
 import '@learn-anything/lesson-player/styles.css';
 
 export function Classroom({ lesson }: { lesson: LessonSpec }) {
@@ -124,7 +131,8 @@ export function Classroom({ lesson }: { lesson: LessonSpec }) {
 import { createLessonArtifacts } from '@learn-anything/content-generator';
 
 // compiledLesson 已按实际音频的语义锚点编译。
-const { lessonJson, captionsVtt, resources } = createLessonArtifacts(compiledLesson);
+const { lessonJson, captionsVtt, resources } =
+  createLessonArtifacts(compiledLesson);
 // 调用者负责保存 JSON / VTT，并将音频放到 resources.audio 对应的位置。
 ```
 

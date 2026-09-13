@@ -1,5 +1,6 @@
 import {
   parseLessonDraft,
+  type CapabilityRegistry,
   presentationTimes,
   resolveDraftConfig,
   validateBuiltinVisuals,
@@ -58,6 +59,7 @@ export type CompiledLesson = DraftArtifacts & {
   handwritingFont?: Buffer;
 };
 export type DraftCompileOptions = {
+  capabilities?: CapabilityRegistry;
   pauseBetweenSegments?: number;
   resources?: { audio: string; captions?: string };
 };
@@ -77,7 +79,7 @@ export function compileAlignedLessonDraft(
   segments: AlignedDraftSegment[],
   options: DraftCompileOptions & { duration?: number } = {},
 ): DraftArtifacts {
-  const draft = parseLessonDraft(input);
+  const draft = parseLessonDraft(input, options.capabilities);
   const pause = pauseSeconds(options.pauseBetweenSegments);
   if (segments.length !== draft.segments.length)
     throw new Error('实测旁白片段不完整。');
@@ -238,13 +240,18 @@ export function compileAlignedLessonDraft(
     },
     visuals: draft.visuals.map((visual) => ({
       ...visual,
-      config: resolveDraftConfig(visual.config, visual.grammar, (when, path) =>
-        resolve(when, `visuals.${visual.id}.config.${path.join('.')}`),
+      config: resolveDraftConfig(
+        visual.config,
+        visual.grammar,
+        (when, path) =>
+          resolve(when, `visuals.${visual.id}.config.${path.join('.')}`),
+        [],
+        options.capabilities,
       ),
     })),
     events,
   });
-  validateBuiltinVisuals(artifacts.lesson);
+  validateBuiltinVisuals(artifacts.lesson, { registry: options.capabilities });
   return {
     ...artifacts,
     report: {
@@ -278,7 +285,7 @@ export async function compileLessonDraft(
     handwriting?: LessonHandwritingProvider | false;
   },
 ): Promise<CompiledLesson> {
-  const draft = parseLessonDraft(input); // All material/grammar checks before billing.
+  const draft = parseLessonDraft(input, options.capabilities); // All material/grammar checks before billing.
   const pause = pauseSeconds(options.pauseBetweenSegments);
   // Validate resource addresses before generating speech too.
   createLessonArtifacts({

@@ -1,4 +1,5 @@
 export * from './visual-models.ts';
+export * from './capabilities.ts';
 export * from './draft.ts';
 export * from './handwriting.ts';
 export * from './teaching.ts';

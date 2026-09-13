@@ -1,3 +1,4 @@
+import { loadLessonVisualRegistry } from '../capabilities/player.ts';
 import { createRoot } from 'react-dom/client';
 import { ClassroomPlayer } from '@learn-anything/lesson-player';
 import { parseLesson } from '@learn-anything/lesson-schema';
@@ -23,7 +24,10 @@ async function load() {
       `"${lesson.handwriting.family}"`,
     );
   }
-  root.render(<ClassroomPlayer lesson={lesson} />);
+  const registry = await loadLessonVisualRegistry(
+    lesson.visuals.map((visual) => visual.grammar),
+  );
+  root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
 }
 load().catch(() =>
   root.render(<p role="alert">课程载入失败，请检查终端输出并重新打开课程。</p>),

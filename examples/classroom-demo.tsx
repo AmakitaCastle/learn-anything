@@ -4,7 +4,7 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from '../components/ui/native-select';
-import { ClassroomPlayer } from '@learn-anything/lesson-player';
+import LessonPlayer from '../app/lesson-player';
 import type { LessonSpec } from '@learn-anything/lesson-schema';
 export default function ClassroomDemo({
   catalog,
@@ -31,7 +31,7 @@ export default function ClassroomDemo({
           ))}
         </NativeSelect>
       </div>
-      <ClassroomPlayer lesson={catalog[selection]} />
+      <LessonPlayer lesson={catalog[selection]} />
     </>
   );
 }

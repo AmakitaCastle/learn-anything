@@ -29,7 +29,7 @@
     "lesson:draft": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-lesson-draft.ts",
     "lesson": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/lesson.ts",
     "typecheck": "tsc --noEmit --incremental false",
-    "lint": "oxlint app lib packages examples scripts viewer tests playwright.config.ts",
+    "lint": "oxlint app lib packages capabilities examples scripts viewer tests playwright.config.ts",
     "format": "oxfmt"
   },
   "dependencies": {

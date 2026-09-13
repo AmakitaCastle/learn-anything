@@ -10,6 +10,12 @@ import {
   type Json,
   type TimelineEvent,
 } from './index.ts';
+import {
+  builtinCapabilities,
+  capabilityTimeField,
+  validateCapabilityDraft,
+  type CapabilityRegistry,
+} from './capabilities.ts';
 import { phraseRange, spokenText } from './anchors.ts';
 import { sentenceRanges } from './teaching.ts';
 
@@ -98,53 +104,60 @@ export function parseAnchor(value: unknown): LessonAnchor {
   };
 }
 
-function timePath(grammar: string, path: (string | number)[]) {
-  if (grammar === 'flow' || grammar === 'state-transition')
-    return (
-      path.length === 3 &&
-      path[0] === 'nodes' &&
-      typeof path[1] === 'number' &&
-      path[2] === 'at'
-    );
-  return (
-    grammar === 'array-search' &&
-    path.length === 1 &&
-    ['valuesAt', 'scanStart', 'scanEnd', 'trailAt'].includes(String(path[0]))
-  );
-}
 export function resolveDraftConfig(
   value: Json,
   grammar: string,
-  resolve: (anchor: LessonAnchor, path: (string | number)[]) => number,
+  resolve: (
+    anchor: LessonAnchor,
+    path: (string | number)[],
+    preflight: number,
+  ) => number,
   path: (string | number)[] = [],
+  capabilities: CapabilityRegistry = builtinCapabilities,
 ): Json {
+  const field = capabilityTimeField(capabilities, grammar, path);
   if (
     value &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
     '$time' in value
   ) {
-    if (Object.keys(value).length !== 1 || !timePath(grammar, path))
+    if (Object.keys(value).length !== 1 || !field)
       throw new Error('$time 只能用于已支持的动画时间字段。');
-    return resolve(parseAnchor(value.$time), path);
+    return resolve(parseAnchor(value.$time), path, field?.preflight ?? 0);
   }
-  if (timePath(grammar, path))
+  if (field)
     throw new Error('动画时间字段必须使用 $time 语义锚点，不能预填秒数。');
   if (Array.isArray(value))
     return value.map((child, index) =>
-      resolveDraftConfig(child, grammar, resolve, [...path, index]),
+      resolveDraftConfig(
+        child,
+        grammar,
+        resolve,
+        [...path, index],
+        capabilities,
+      ),
     );
   if (value && typeof value === 'object')
     return Object.fromEntries(
       Object.entries(value).map(([key, child]) => [
         key,
-        resolveDraftConfig(child, grammar, resolve, [...path, key]),
+        resolveDraftConfig(
+          child,
+          grammar,
+          resolve,
+          [...path, key],
+          capabilities,
+        ),
       ]),
     );
   return value;
 }
 
-export function parseLessonDraft(value: unknown): LessonDraft {
+export function parseLessonDraft(
+  value: unknown,
+  capabilities: CapabilityRegistry = builtinCapabilities,
+): LessonDraft {
   const input = record(value);
   keys(input, [
     'draftVersion',
@@ -318,17 +331,23 @@ export function parseLessonDraft(value: unknown): LessonDraft {
       config: resolveDraftConfig(
         visual.config,
         visual.grammar,
-        (anchor, path) => {
+        (anchor, _path, preflight) => {
           check(anchor);
-          return path[0] === 'scanEnd' ? 1 : 0;
+          return preflight;
         },
+        [],
+        capabilities,
       ),
     })),
     events: eventData,
   });
   // Word groups and explicit offsets can change ordering. Do not guess state
   // chronology from character positions; reduce only after real timestamps.
-  validateBuiltinVisuals(scaffold, { checkState: false });
+  validateBuiltinVisuals(scaffold, {
+    checkState: false,
+    registry: capabilities,
+  });
+  validateCapabilityDraft(scaffold, capabilities);
   if (
     input.boardMode === 'full-narration' &&
     scaffold.events.some(
@@ -339,21 +358,6 @@ export function parseLessonDraft(value: unknown): LessonDraft {
     )
   )
     throw new Error('图示动作与本段旁白关联不一致。');
-  for (const visual of scaffold.visuals) {
-    if (visual.grammar !== 'state-transition') continue;
-    const events = scaffold.events.filter(
-      (event) => event.type === 'visual' && event.visualId === visual.id,
-    );
-    if (
-      events.some(
-        (event) => event.type === 'visual' && event.action === 'transition',
-      ) &&
-      !events.some(
-        (event) => event.type === 'visual' && event.action === 'enter',
-      )
-    )
-      throw new Error('状态转换缺少 enter 起点。');
-  }
   const written = new Set(
     scaffold.events.flatMap((event) =>
       event.type === 'board.write'

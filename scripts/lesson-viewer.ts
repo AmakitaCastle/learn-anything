@@ -5,7 +5,11 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseLesson } from '@learn-anything/lesson-schema';
+import { lessonCapabilities } from '../capabilities/index.ts';
+import {
+  validateBuiltinVisuals,
+  parseLesson,
+} from '@learn-anything/lesson-schema';
 
 type File = { bytes: Buffer; type: string };
 const mime: Record<string, string> = {
@@ -51,6 +55,7 @@ export async function startLessonViewer(
   const lesson = parseLesson(
     JSON.parse(await readFile(join(directory, 'lesson.json'), 'utf8')),
   );
+  validateBuiltinVisuals(lesson, { registry: lessonCapabilities });
   const token = randomBytes(16).toString('hex');
   const prefix = `/${token}/`;
   const courseFiles = new Map<string, File>();

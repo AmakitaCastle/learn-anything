@@ -1,0 +1,1168 @@
+{
+  "draftVersion": "0.1.0",
+  "id": "task-separation-scene",
+  "title": "课题分离",
+  "eyebrow": "给内耗者的边界练习 · {duration}",
+  "boardMode": "full-narration",
+  "segments": [
+    {
+      "id": "seg-1",
+      "label": "内耗的瞬间",
+      "text": "你是不是也这样：别人一句话没回，你能想一整晚；同事脸色不好，你立刻反省自己。这种反复消耗，往往不是事情本身太大，而是你把别人的课题背到了自己身上。",
+      "visualId": "intro",
+      "emphasis": [
+        {
+          "phrase": "反复消耗"
+        },
+        {
+          "phrase": "别人的课题背到了自己身上"
+        }
+      ]
+    },
+    {
+      "id": "seg-2",
+      "label": "第一步：问归属",
+      "text": "课题分离的第一步，是承认一件事让你不舒服。先问一句：这件事的后果，最终由谁承担？能承担后果的人，才是课题的主人。",
+      "visualId": "ownership",
+      "emphasis": [
+        {
+          "phrase": "课题分离"
+        },
+        {
+          "phrase": "最终由谁承担"
+        },
+        {
+          "phrase": "课题的主人"
+        }
+      ]
+    },
+    {
+      "id": "seg-3",
+      "label": "判断标准",
+      "text": "判断标准很具体：我的课题，是我能选择、能行动、也要承担结果的部分；他人的课题，是对方的想法、情绪、选择和评价。你可以表达关心，但不能替对方活。",
+      "visualId": "ownership",
+      "emphasis": [
+        {
+          "phrase": "我的课题"
+        },
+        {
+          "phrase": "他人的课题"
+        },
+        {
+          "phrase": "不能替对方活"
+        }
+      ]
+    },
+    {
+      "id": "seg-4",
+      "label": "消息未回的例子",
+      "text": "比如你发了消息，对方没回。你能做的是选择怎么表达、是否再跟进；你不能控制的是对方何时回、为什么没回。把能做的做完，剩下的交还给对方的课题。",
+      "visualId": "unreplied",
+      "emphasis": [
+        {
+          "phrase": "你能做的是"
+        },
+        {
+          "phrase": "你不能控制的是"
+        },
+        {
+          "phrase": "交还给对方的课题"
+        }
+      ]
+    },
+    {
+      "id": "seg-5",
+      "label": "边界混在一起",
+      "text": "内耗常常是边界混在一起：你替对方焦虑，又用对方的反应审判自己。识别、分离，就是把『我该负责』和『我无法负责』放回两边。",
+      "visualId": "release",
+      "emphasis": [
+        {
+          "phrase": "边界混在一起"
+        },
+        {
+          "phrase": "替对方焦虑"
+        },
+        {
+          "phrase": "我该负责"
+        },
+        {
+          "phrase": "我无法负责"
+        }
+      ]
+    },
+    {
+      "id": "seg-6",
+      "label": "行动与放下",
+      "text": "最后，行动只放在你的课题里：该沟通就沟通，该拒绝就拒绝；对方的情绪和选择，允许它发生。这样做不是冷漠，而是停止内耗，把力气用在能改变的地方。",
+      "visualId": "release",
+      "emphasis": [
+        {
+          "phrase": "行动只放在你的课题里"
+        },
+        {
+          "phrase": "允许它发生"
+        },
+        {
+          "phrase": "不是冷漠"
+        },
+        {
+          "phrase": "停止内耗"
+        },
+        {
+          "phrase": "能改变的地方"
+        }
+      ]
+    }
+  ],
+  "presentation": {
+    "diagramTitle": "看见情境，分清归属",
+    "notesTitle": "讲解要点"
+  },
+  "visuals": [
+    {
+      "id": "intro",
+      "grammar": "scene",
+      "config": {
+        "elements": [
+          {
+            "id": "me",
+            "kind": "person",
+            "label": "我",
+            "position": {
+              "x": 23,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "other",
+            "kind": "person",
+            "label": "对方",
+            "position": {
+              "x": 77,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "phone",
+            "kind": "phone",
+            "label": "消息",
+            "position": {
+              "x": 40,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 10,
+            "height": 25
+          },
+          {
+            "id": "message",
+            "kind": "message",
+            "label": "尚未回复",
+            "position": {
+              "x": 45,
+              "y": 31
+            },
+            "tone": "muted",
+            "width": 22,
+            "height": 15
+          },
+          {
+            "id": "guess",
+            "kind": "thought",
+            "label": "是不是我说错了？",
+            "position": {
+              "x": 24,
+              "y": 23
+            },
+            "tone": "amber",
+            "width": 30,
+            "height": 20
+          },
+          {
+            "id": "burden",
+            "kind": "token",
+            "label": "对方的情绪",
+            "position": {
+              "x": 76,
+              "y": 83
+            },
+            "tone": "rose",
+            "width": 22,
+            "height": 13
+          }
+        ],
+        "relations": [
+          {
+            "id": "sent",
+            "from": "me",
+            "to": "other",
+            "kind": "arrow"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ownership",
+      "grammar": "scene",
+      "config": {
+        "elements": [
+          {
+            "id": "mine",
+            "kind": "region",
+            "label": "我的课题",
+            "position": {
+              "x": 25,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "theirs",
+            "kind": "region",
+            "label": "对方的课题",
+            "position": {
+              "x": 75,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "question",
+            "kind": "thought",
+            "label": "后果由谁承担？",
+            "position": {
+              "x": 50,
+              "y": 22
+            },
+            "tone": "amber",
+            "width": 33,
+            "height": 17
+          },
+          {
+            "id": "choice",
+            "kind": "card",
+            "label": "我的选择与行动",
+            "position": {
+              "x": 50,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 27,
+            "height": 14
+          },
+          {
+            "id": "evaluation",
+            "kind": "card",
+            "label": "对方的想法与评价",
+            "position": {
+              "x": 50,
+              "y": 76
+            },
+            "tone": "rose",
+            "width": 27,
+            "height": 14
+          }
+        ],
+        "relations": []
+      }
+    },
+    {
+      "id": "unreplied",
+      "grammar": "scene",
+      "config": {
+        "elements": [
+          {
+            "id": "me",
+            "kind": "person",
+            "label": "我",
+            "position": {
+              "x": 23,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "other",
+            "kind": "person",
+            "label": "对方",
+            "position": {
+              "x": 77,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "mine",
+            "kind": "region",
+            "label": "我的课题",
+            "position": {
+              "x": 25,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "theirs",
+            "kind": "region",
+            "label": "对方的课题",
+            "position": {
+              "x": 75,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "phone",
+            "kind": "phone",
+            "label": "消息",
+            "position": {
+              "x": 39,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 9,
+            "height": 25
+          },
+          {
+            "id": "message",
+            "kind": "message",
+            "label": "还没回复",
+            "position": {
+              "x": 46,
+              "y": 29
+            },
+            "tone": "muted",
+            "width": 23,
+            "height": 14
+          },
+          {
+            "id": "express",
+            "kind": "card",
+            "label": "如何表达",
+            "position": {
+              "x": 45,
+              "y": 73
+            },
+            "tone": "blue",
+            "width": 24,
+            "height": 13
+          },
+          {
+            "id": "follow",
+            "kind": "card",
+            "label": "是否跟进",
+            "position": {
+              "x": 45,
+              "y": 85
+            },
+            "tone": "blue",
+            "width": 24,
+            "height": 13
+          },
+          {
+            "id": "reply",
+            "kind": "card",
+            "label": "何时回复",
+            "position": {
+              "x": 55,
+              "y": 73
+            },
+            "tone": "rose",
+            "width": 24,
+            "height": 13
+          },
+          {
+            "id": "reason",
+            "kind": "card",
+            "label": "为何没回",
+            "position": {
+              "x": 55,
+              "y": 85
+            },
+            "tone": "rose",
+            "width": 24,
+            "height": 13
+          }
+        ],
+        "relations": []
+      }
+    },
+    {
+      "id": "release",
+      "grammar": "scene",
+      "config": {
+        "elements": [
+          {
+            "id": "mine",
+            "kind": "region",
+            "label": "我的课题",
+            "position": {
+              "x": 25,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "theirs",
+            "kind": "region",
+            "label": "对方的课题",
+            "position": {
+              "x": 75,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 43,
+            "height": 86
+          },
+          {
+            "id": "me",
+            "kind": "person",
+            "label": "我",
+            "position": {
+              "x": 25,
+              "y": 50
+            },
+            "tone": "blue",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "other",
+            "kind": "person",
+            "label": "对方",
+            "position": {
+              "x": 75,
+              "y": 50
+            },
+            "tone": "rose",
+            "width": 14,
+            "height": 28
+          },
+          {
+            "id": "worry",
+            "kind": "thought",
+            "label": "替对方焦虑",
+            "position": {
+              "x": 25,
+              "y": 22
+            },
+            "tone": "amber",
+            "width": 26,
+            "height": 17
+          },
+          {
+            "id": "responsibility",
+            "kind": "card",
+            "label": "我该负责",
+            "position": {
+              "x": 50,
+              "y": 74
+            },
+            "tone": "blue",
+            "width": 26,
+            "height": 14
+          },
+          {
+            "id": "reaction",
+            "kind": "card",
+            "label": "对方的反应",
+            "position": {
+              "x": 25,
+              "y": 89
+            },
+            "tone": "rose",
+            "width": 26,
+            "height": 14
+          }
+        ],
+        "relations": []
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "me",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "你是不是也这样"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "other",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "你是不是也这样"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "phone",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "你是不是也这样"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "message",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "别人一句话没回"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "connect",
+      "payload": {
+        "id": "sent"
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "别人一句话没回"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "guess",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "你能想一整晚"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "emphasize",
+      "payload": {
+        "id": "guess"
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "想一整晚"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "show",
+      "payload": {
+        "id": "burden",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "同事脸色不好"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "intro",
+      "action": "move",
+      "payload": {
+        "id": "burden",
+        "position": {
+          "x": 24,
+          "y": 83
+        },
+        "duration": 1.2
+      },
+      "when": {
+        "segment": "seg-1",
+        "phrase": "背到了自己身上"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "show",
+      "payload": {
+        "id": "mine",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-2",
+        "phrase": "课题分离"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "show",
+      "payload": {
+        "id": "theirs",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-2",
+        "phrase": "课题分离"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "show",
+      "payload": {
+        "id": "question",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-2",
+        "phrase": "先问一句"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "emphasize",
+      "payload": {
+        "id": "question"
+      },
+      "when": {
+        "segment": "seg-2",
+        "phrase": "最终由谁承担"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "show",
+      "payload": {
+        "id": "choice",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-3",
+        "phrase": "我的课题"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "group",
+      "payload": {
+        "id": "choice",
+        "regionId": "mine",
+        "position": {
+          "x": 25,
+          "y": 51
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-3",
+        "phrase": "承担结果的部分"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "show",
+      "payload": {
+        "id": "evaluation",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-3",
+        "phrase": "他人的课题"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "group",
+      "payload": {
+        "id": "evaluation",
+        "regionId": "theirs",
+        "position": {
+          "x": 75,
+          "y": 75
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-3",
+        "phrase": "选择和评价"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "ownership",
+      "action": "hide",
+      "payload": {
+        "id": "question"
+      },
+      "when": {
+        "segment": "seg-3",
+        "phrase": "不能替对方活"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "me",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你发了消息"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "other",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你发了消息"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "phone",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你发了消息"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "message",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你发了消息"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "move",
+      "payload": {
+        "id": "message",
+        "position": {
+          "x": 73,
+          "y": 27
+        },
+        "duration": 1.3
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你发了消息"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "mine",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你能做的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "express",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你能做的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "follow",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你能做的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "group",
+      "payload": {
+        "id": "express",
+        "regionId": "mine",
+        "position": {
+          "x": 25,
+          "y": 75
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "选择怎么表达"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "group",
+      "payload": {
+        "id": "follow",
+        "regionId": "mine",
+        "position": {
+          "x": 25,
+          "y": 86
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "是否再跟进"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "theirs",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你不能控制的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "reply",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你不能控制的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "show",
+      "payload": {
+        "id": "reason",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "你不能控制的是"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "group",
+      "payload": {
+        "id": "reply",
+        "regionId": "theirs",
+        "position": {
+          "x": 75,
+          "y": 75
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "对方何时回"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "group",
+      "payload": {
+        "id": "reason",
+        "regionId": "theirs",
+        "position": {
+          "x": 75,
+          "y": 86
+        },
+        "duration": 1.1
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "为什么没回"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "emphasize",
+      "payload": {
+        "id": "express"
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "把能做的做完"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "unreplied",
+      "action": "emphasize",
+      "payload": {
+        "id": "follow"
+      },
+      "when": {
+        "segment": "seg-4",
+        "phrase": "把能做的做完"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "me",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "边界混在一起"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "other",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "边界混在一起"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "worry",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "边界混在一起"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "responsibility",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "边界混在一起"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "reaction",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "边界混在一起"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "emphasize",
+      "payload": {
+        "id": "reaction"
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "审判自己"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "mine",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "识别"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "show",
+      "payload": {
+        "id": "theirs",
+        "duration": 0.6
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "识别"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "group",
+      "payload": {
+        "id": "responsibility",
+        "regionId": "mine",
+        "position": {
+          "x": 25,
+          "y": 76
+        },
+        "duration": 1.2
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "我该负责"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "group",
+      "payload": {
+        "id": "reaction",
+        "regionId": "theirs",
+        "position": {
+          "x": 75,
+          "y": 76
+        },
+        "duration": 1.2
+      },
+      "when": {
+        "segment": "seg-5",
+        "phrase": "我无法负责"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "emphasize",
+      "payload": {
+        "id": "responsibility"
+      },
+      "when": {
+        "segment": "seg-6",
+        "phrase": "行动只放在你的课题里"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "emphasize",
+      "payload": {
+        "id": "reaction",
+        "active": false
+      },
+      "when": {
+        "segment": "seg-6",
+        "phrase": "允许它发生"
+      }
+    },
+    {
+      "type": "visual",
+      "visualId": "release",
+      "action": "hide",
+      "payload": {
+        "id": "worry",
+        "duration": 1.5
+      },
+      "when": {
+        "segment": "seg-6",
+        "phrase": "停止内耗"
+      }
+    }
+  ]
+}
