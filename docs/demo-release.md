@@ -24,9 +24,9 @@
 ```bash
 npm test
 npm run typecheck
+npm run build
 npm run typecheck:modules
 npm run lint
-npm run build
 npm run test:modules
 npx playwright install chromium
 npm run test:browser
@@ -52,4 +52,8 @@ GitHub 首次发布时：创建公开仓库、推送源码、启用 CI、以 `v0
 - 将发布的源码文件及现有 Git 历史未匹配到当前本地配置中的凭证；归档排除本地配置、依赖、运行缓存和 Git 目录。
 - README 使用实际课堂截图。未请求付费文本模型或语音接口。
 
-GitHub 发布尚未执行：本机命令行凭证失效，浏览器因无法验证管理策略拒绝访问创建仓库入口。SSH 推送认证可用；恢复命令行登录或提供已创建的公开空仓库地址后，可继续推送并创建 Demo Release。Linux CI 尚未在 GitHub 运行，Windows 尚未实机验收。
+GitHub 已发布：[公开仓库](https://github.com/AmakitaCastle/learn-anything)、[v0.1.0-demo Release](https://github.com/AmakitaCastle/learn-anything/releases/tag/v0.1.0-demo)。Release 包含源码归档和 SHA-256 校验文件，对应代码提交 `87a98b6`。GitHub Linux CI 已启动，结果在下方补充；Windows 尚未实机验收。
+
+## 首次 GitHub CI 修正
+
+干净 Linux 环境中，业务模块类型检查依赖共享协议的构建产物。首次工作流把模块检查放在构建之前，因找不到协议声明失败；已将生产构建提前，不依赖开发机器的已有 dist。课程生成和播放实现未改动。
