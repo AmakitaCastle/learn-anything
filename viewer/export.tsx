@@ -12,6 +12,13 @@ import {
   latinHandwritingBundle,
 } from '@learn-anything/lesson-player/board';
 import './export.css';
+import {
+  DEFAULT_FONTS,
+  loadChineseFont,
+  loadLatinFont,
+  type FontSelection,
+  type ChineseFontLoader,
+} from '@learn-anything/lesson-player/fonts';
 
 export type VideoFrameBridge = {
   duration: number;
@@ -30,7 +37,15 @@ export async function mountVideo(
   lesson: LessonSpec,
   registry: VisualRegistry,
   theme: ClassroomTheme = 'light',
+  fonts: FontSelection = { ...DEFAULT_FONTS },
+  chineseLoader?: ChineseFontLoader,
 ) {
+  const [chineseFont, latinFont] = await Promise.all([
+    fonts.chinese === 'ma-shan-zheng'
+      ? Promise.resolve(undefined)
+      : loadChineseFont(fonts.chinese, chineseLoader),
+    loadLatinFont(fonts.latin),
+  ]);
   const prepared = prepareLesson(lesson, registry);
   const bridge: VideoFrameBridge = {
     duration: lesson.duration,
@@ -39,14 +54,24 @@ export async function mountVideo(
         throw new Error('视频帧时间无效。');
       flushSync(() =>
         root.render(
-          <HandwritingProvider bundle={lesson.handwriting} theme={theme}>
+          <HandwritingProvider
+            bundle={lesson.handwriting}
+            theme={theme}
+            chineseFont={chineseFont}
+            latinFont={latinFont}
+          >
             <main
               className="classroom-shell video-frame"
               data-theme={theme}
+              data-chinese-font={fonts.chinese}
+              data-latin-font={fonts.latin}
               data-video-time={seconds}
               style={
                 {
-                  '--font-hand-latin': `"${latinHandwritingBundle.family}"`,
+                  ...(chineseFont
+                    ? { '--font-hand': `"${chineseFont.family}"` }
+                    : {}),
+                  '--font-hand-latin': `"${(latinFont ?? latinHandwritingBundle).family}"`,
                 } as React.CSSProperties
               }
             >

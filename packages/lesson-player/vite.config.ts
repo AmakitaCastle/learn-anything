@@ -11,6 +11,7 @@ export default defineConfig({
         runtime: 'runtime.ts',
         grammars: 'grammars/index.ts',
         board: 'board/index.tsx',
+        fonts: 'font-presets.ts',
       },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`,

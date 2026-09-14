@@ -22,14 +22,23 @@ import type {
 export { latin as latinHandwritingBundle };
 export type ClassroomTheme = 'light' | 'dark';
 const ThemeContext = createContext<ClassroomTheme>('light');
-const FontContext = createContext<TegakiBundle>(chinese);
+const FontContext = createContext<{
+  chinese: TegakiBundle;
+  latin: TegakiBundle;
+  defaultChinese: TegakiBundle;
+}>({ chinese, latin, defaultChinese: chinese });
+export { chinese as defaultChineseHandwritingBundle };
 export function HandwritingProvider({
   bundle,
   theme = 'light',
+  chineseFont,
+  latinFont = latin,
   children,
 }: {
   bundle?: HandwritingBundle;
   theme?: ClassroomTheme;
+  chineseFont?: TegakiBundle;
+  latinFont?: TegakiBundle;
   children: React.ReactNode;
 }) {
   const font = useMemo(
@@ -37,13 +46,24 @@ export function HandwritingProvider({
     [bundle],
   );
   useEffect(() => {
-    void Promise.all([ensureFontFace(font), ensureFontFace(latin)]).catch(
-      () => undefined,
-    );
-  }, [font]);
+    void Promise.all([
+      ensureFontFace(font),
+      ensureFontFace(chineseFont ?? font),
+      ensureFontFace(latin),
+      ensureFontFace(latinFont),
+    ]).catch(() => undefined);
+  }, [font, chineseFont, latinFont]);
+  const context = useMemo(
+    () => ({
+      chinese: chineseFont ?? font,
+      latin: latinFont,
+      defaultChinese: font,
+    }),
+    [chineseFont, font, latinFont],
+  );
   return (
     <ThemeContext.Provider value={theme}>
-      <FontContext.Provider value={font}>{children}</FontContext.Provider>
+      <FontContext.Provider value={context}>{children}</FontContext.Provider>
     </ThemeContext.Provider>
   );
 }
@@ -79,6 +99,44 @@ const InkRun = memo(function InkRun({
     </TegakiRenderer>
   );
 });
+// Existing SVG labels keep their reveal behavior. Custom typography uses the
+// matching script font rather than applying a Latin font to Chinese labels.
+export function TeachingSvgSpans({ children }: { children: string }) {
+  const fonts = useContext(FontContext);
+  if (fonts.chinese === fonts.defaultChinese && fonts.latin === latin)
+    return <>{children}</>;
+  const runs: { text: string; family: string }[] = [];
+  for (const char of Array.from(children)) {
+    const isLatin = /^[\u0020-\u007e]$/u.test(char);
+    const selected = isLatin ? fonts.latin : fonts.chinese;
+    const fallback = isLatin ? latin : fonts.defaultChinese;
+    const family =
+      char in selected.glyphData ? selected.family : fallback.family;
+    const last = runs.at(-1);
+    if (last?.family === family) last.text += char;
+    else runs.push({ text: char, family });
+  }
+  return (
+    <>
+      {runs.map((run, i) => (
+        <tspan key={i} style={{ fontFamily: `"${run.family}", cursive` }}>
+          {run.text}
+        </tspan>
+      ))}
+    </>
+  );
+}
+export function TeachingSvgText({
+  children,
+  ...props
+}: React.SVGProps<SVGTextElement> & { children: string }) {
+  return (
+    <text {...props}>
+      <TeachingSvgSpans>{children}</TeachingSvgSpans>
+    </text>
+  );
+}
+
 export function HandwrittenLine({
   item,
   time,
@@ -90,12 +148,20 @@ export function HandwrittenLine({
   underline?: boolean;
   speechTiming?: { at: number; endAt: number }[];
 }) {
-  const font = useContext(FontContext);
+  const {
+    chinese: font,
+    latin: selectedLatin,
+    defaultChinese,
+  } = useContext(FontContext);
   const theme = useContext(ThemeContext);
   const ink = handwritingAt(item, time);
   const schedule = useMemo(
-    () => handwritingRuns(item.text, font, latin),
-    [item.text, font],
+    () =>
+      handwritingRuns(item.text, font, selectedLatin, {
+        chinese: defaultChinese,
+        latin,
+      }),
+    [item.text, font, selectedLatin, defaultChinese],
   );
   // The bundled Chinese paths are a course-specific subset. Other courses
   // must still render their text; missing paths use deterministic progressive
@@ -143,9 +209,17 @@ export function HandwrittenLine({
             </span>
           ) : (
             <InkRun
-              key={`${index}-${run.script}-${theme}`}
+              key={`${index}-${run.script}-${theme}-${font.family}-${selectedLatin.family}`}
               run={run}
-              font={run.script === 'latin' ? latin : font}
+              font={
+                run.script === 'latin'
+                  ? selectedLatin
+                  : run.script === 'latin-default'
+                    ? latin
+                    : run.script === 'chinese-default'
+                      ? defaultChinese
+                      : font
+              }
               progress={
                 speechTiming
                   ? speechHandwritingProgress(run, speechTiming, time)

@@ -36,3 +36,7 @@ npm run typecheck -w @learn-anything/lesson-player
 原中文笔画与字体资源在 `fonts/`，英文字母和数字沿用 Tegaki Caveat。可继承宿主的 `--font-hand`；缺少中文路径的字符是字体逐字渐显，并非完整笔画书写。CSS 仅作用于 `.classroom-shell` 内的课堂。
 
 目前是 private workspace，未发布到 npm。独立项目边界和未来拆仓说明见[模块架构](../../docs/module-architecture.md)，功能说明见[课堂能力](../../docs/classroom-capability.md)。
+
+## 内置字体选择
+
+中文与英文／数字各支持三款字体，独立选择并保存。视频导出默认沿用 CLI 字体偏好，也可用 `--export-font-chinese`、`--export-font-latin` 单独覆盖，不修改原课程或语音时间轴。详见[字体选择](../../docs/font-selection.md)。

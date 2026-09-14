@@ -210,12 +210,24 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ClassroomPlayer, prepareLesson, classroomAt } from '@learn-anything/lesson-player';
 import { defaultVisualRegistry } from '@learn-anything/lesson-player/grammars';
+import { CHINESE_FONTS, LATIN_FONTS, loadChineseFont, loadLatinFont } from '@learn-anything/lesson-player/fonts';
 import { createLessonArtifacts, compileLessonDraft, parseLessonDraft } from '@learn-anything/content-generator';
 import { spokenText } from '@learn-anything/lesson-schema';
 import { generateLessonDraft, createLessonDraftProvider } from '@learn-anything/lesson-draft-generator';
 import draftData from '@learn-anything/content-generator/examples/water-cycle.draft.json' with { type: 'json' };
 const artifacts = createLessonArtifacts(JSON.parse(fs.readFileSync('./lesson.json', 'utf8')));
 assert.ok(artifacts.captionsVtt.startsWith('WEBVTT'));
+assert.equal(CHINESE_FONTS.length, 3);
+assert.equal(LATIN_FONTS.length, 3);
+for (const id of ['xiaolai', 'wenkai']) {
+  const font = await loadChineseFont(id);
+  assert.ok(font.fontUrl.startsWith('data:'));
+  assert.ok(font.glyphData['温'].s.length > 0);
+}
+assert.ok((await loadLatinFont('klee-one')).glyphData['A']);
+await assert.rejects(loadChineseFont('__proto__'));
+await assert.rejects(loadLatinFont('https://other.example/font.ttf'));
+assert.ok(fs.readFileSync('./node_modules/@learn-anything/lesson-player/fonts/choices/OFL-wenkai.txt', 'utf8').includes('SIL OPEN FONT LICENSE'));
 assert.equal(classroomAt(prepareLesson(artifacts.lesson, defaultVisualRegistry), 60).board.length, 8);
 assert.ok(renderToStaticMarkup(createElement(ClassroomPlayer, {lesson: artifacts.lesson})).includes('data-lesson-id="water-cycle"'));
 const fullDraft = {...draftData, boardMode: 'full-narration', segments: draftData.segments.map(segment => ({...segment, visualId: draftData.visuals[0].id}))};

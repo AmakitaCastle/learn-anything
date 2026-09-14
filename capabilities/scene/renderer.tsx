@@ -1,3 +1,4 @@
+import { TeachingSvgSpans } from '@learn-anything/lesson-player/board';
 import {
   scalarAt,
   positionAt,
@@ -43,7 +44,7 @@ function Label({
     >
       {lines.map((line, i) => (
         <tspan key={i} x="0" y={y + (i - (lines.length - 1) / 2) * (size + 5)}>
-          {line}
+          <TeachingSvgSpans>{line}</TeachingSvgSpans>
         </tspan>
       ))}
     </text>

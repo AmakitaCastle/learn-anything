@@ -5,7 +5,7 @@ import {
   type PlotState,
   type Point,
 } from '@learn-anything/lesson-schema';
-import { clamp01 } from '../board/index.tsx';
+import { clamp01, TeachingSvgText } from '../board/index.tsx';
 import type { VisualGrammar } from '../runtime.ts';
 export const plot: VisualGrammar<PlotConfig, PlotState, { index: number }> = {
   ...plotModel,
@@ -46,9 +46,9 @@ export const plot: VisualGrammar<PlotConfig, PlotState, { index: number }> = {
           {config.xAxis.ticks.map((tick) => (
             <g key={tick} data-tick={tick}>
               <path d={`M${x(tick)} 300 v6`} />
-              <text x={x(tick)} y="322" textAnchor="middle">
+              <TeachingSvgText x={x(tick)} y="322" textAnchor="middle">
                 {label(tick)}
-              </text>
+              </TeachingSvgText>
             </g>
           ))}
         </g>
@@ -56,23 +56,23 @@ export const plot: VisualGrammar<PlotConfig, PlotState, { index: number }> = {
           {config.yAxis.ticks.map((tick) => (
             <g key={tick} data-tick={tick}>
               <path d={`M44 ${y(tick)} h6`} />
-              <text
+              <TeachingSvgText
                 x="38"
                 y={y(tick)}
                 textAnchor="end"
                 dominantBaseline="middle"
               >
                 {label(tick)}
-              </text>
+              </TeachingSvgText>
             </g>
           ))}
         </g>
-        <text x="320" y="352" textAnchor="middle">
+        <TeachingSvgText x="320" y="352" textAnchor="middle">
           {config.xLabel}
-        </text>
-        <text x="15" y="30">
+        </TeachingSvgText>
+        <TeachingSvgText x="15" y="30">
           {config.yLabel}
-        </text>
+        </TeachingSvgText>
         {points.length > 1 && (
           <polyline
             data-plot-through={state.through}

@@ -11,6 +11,13 @@ import {
 } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
+import { readFontPreferences } from './font-preferences.ts';
+import {
+  parseFontSelection,
+  DEFAULT_FONTS,
+  type ChineseFontId,
+  type LatinFontId,
+} from '@learn-anything/lesson-schema';
 import { parseLesson } from '@learn-anything/lesson-schema';
 import { startLessonViewer } from './lesson-viewer.ts';
 
@@ -26,6 +33,8 @@ export type VideoExportOptions = {
   fps: number;
   speed: number;
   theme: 'light' | 'dark';
+  chineseFont?: ChineseFontId;
+  latinFont?: LatinFontId;
 };
 export class VideoExportError extends Error {}
 
@@ -35,7 +44,20 @@ export function videoExportOptions(input: {
   fps?: string | number;
   speed?: string | number;
   theme?: string;
+  chineseFont?: string;
+  latinFont?: string;
 }): VideoExportOptions {
+  let fonts;
+  try {
+    fonts = parseFontSelection({
+      chinese: input.chineseFont ?? DEFAULT_FONTS.chinese,
+      latin: input.latinFont ?? DEFAULT_FONTS.latin,
+    });
+  } catch {
+    throw new VideoExportError(
+      '视频字体无效；中文支持 ma-shan-zheng、xiaolai、wenkai，英文／数字支持 caveat、klee-one、parisienne。',
+    );
+  }
   const ratio = input.aspectRatio ?? '16:9';
   if (!Object.hasOwn(VIDEO_RATIOS, ratio))
     throw new VideoExportError('视频比例仅支持 16:9、9:16、1:1。');
@@ -58,6 +80,8 @@ export function videoExportOptions(input: {
     fps,
     speed,
     theme,
+    ...(input.chineseFont !== undefined ? { chineseFont: fonts.chinese } : {}),
+    ...(input.latinFont !== undefined ? { latinFont: fonts.latin } : {}),
   };
 }
 function parseVideoSpeed(input?: string | number) {
@@ -158,10 +182,16 @@ export async function exportLessonVideo(
   dependencies: {
     signal?: AbortSignal;
     onProgress?: (frame: number, total: number) => void;
+    preferencePath?: string;
   } = {},
 ) {
   const options = videoExportOptions(input);
   const { signal } = dependencies;
+  const savedFonts = await readFontPreferences(dependencies.preferencePath);
+  const fonts = parseFontSelection({
+    chinese: options.chineseFont ?? savedFonts.chinese,
+    latin: options.latinFont ?? savedFonts.latin,
+  });
   await prepareVideoExport(options, signal);
   const lesson = parseLesson(
     JSON.parse(await readFile(join(directory, 'lesson.json'), 'utf8')),
@@ -222,7 +252,9 @@ export async function exportLessonVideo(
   };
   signal?.addEventListener('abort', abort, { once: true });
   try {
-    viewer = await startLessonViewer(directory);
+    viewer = await startLessonViewer(directory, {
+      preferencePath: dependencies.preferencePath,
+    });
     check(signal);
     const { chromium } = await import('@playwright/test');
     browser = await chromium.launch({ headless: true, timeout: 10000 });
@@ -244,7 +276,16 @@ export async function exportLessonVideo(
         ? route.continue()
         : route.abort(),
     );
-    await page.goto(viewer.url + '?video=1&theme=' + options.theme);
+    await page.goto(
+      viewer.url +
+        '?' +
+        new URLSearchParams({
+          video: '1',
+          theme: options.theme,
+          'font-chinese': fonts.chinese,
+          'font-latin': fonts.latin,
+        }),
+    );
     await page.waitForFunction(() => Boolean(window.lessonVideo));
     encoder = spawn(
       'ffmpeg',
@@ -329,6 +370,7 @@ export async function exportLessonVideo(
       fps: options.fps,
       speed: options.speed,
       theme: options.theme,
+      fonts,
     };
   } catch (error) {
     check(signal);

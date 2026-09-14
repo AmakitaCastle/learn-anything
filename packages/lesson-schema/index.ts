@@ -323,3 +323,5 @@ export function parseLesson(value: unknown): LessonSpec {
     },
   };
 }
+
+export * from './font-selection.ts';
