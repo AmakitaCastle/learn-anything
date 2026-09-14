@@ -20,12 +20,16 @@ import type {
 } from '@learn-anything/lesson-schema';
 
 export { latin as latinHandwritingBundle };
+export type ClassroomTheme = 'light' | 'dark';
+const ThemeContext = createContext<ClassroomTheme>('light');
 const FontContext = createContext<TegakiBundle>(chinese);
 export function HandwritingProvider({
   bundle,
+  theme = 'light',
   children,
 }: {
   bundle?: HandwritingBundle;
+  theme?: ClassroomTheme;
   children: React.ReactNode;
 }) {
   const font = useMemo(
@@ -37,7 +41,11 @@ export function HandwritingProvider({
       () => undefined,
     );
   }, [font]);
-  return <FontContext.Provider value={font}>{children}</FontContext.Provider>;
+  return (
+    <ThemeContext.Provider value={theme}>
+      <FontContext.Provider value={font}>{children}</FontContext.Provider>
+    </ThemeContext.Provider>
+  );
 }
 export const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 // Completed runs keep their canvas: a ticking audio clock must not redraw
@@ -83,6 +91,7 @@ export function HandwrittenLine({
   speechTiming?: { at: number; endAt: number }[];
 }) {
   const font = useContext(FontContext);
+  const theme = useContext(ThemeContext);
   const ink = handwritingAt(item, time);
   const schedule = useMemo(
     () => handwritingRuns(item.text, font, latin),
@@ -134,7 +143,7 @@ export function HandwrittenLine({
             </span>
           ) : (
             <InkRun
-              key={`${index}-${run.script}`}
+              key={`${index}-${run.script}-${theme}`}
               run={run}
               font={run.script === 'latin' ? latin : font}
               progress={

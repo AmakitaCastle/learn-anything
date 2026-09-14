@@ -2,6 +2,7 @@ import {
   LessonDraftGenerationError,
   formatLessonDraftError,
 } from '@learn-anything/lesson-draft-generator';
+import { VideoExportError } from './lesson-video.ts';
 
 // Only fixed adapter messages and bounded numeric status codes may be shown.
 // Never print arbitrary exceptions, response bodies, environment or headers.
@@ -34,6 +35,8 @@ const messages = new Set([
 ]);
 
 export function formatLessonTaskError(error: unknown): string {
+  if (error instanceof VideoExportError)
+    return `课程任务失败：${error.message}`;
   if (error instanceof LessonDraftGenerationError)
     return formatLessonDraftError(error);
   const message = error instanceof Error ? error.message : '';

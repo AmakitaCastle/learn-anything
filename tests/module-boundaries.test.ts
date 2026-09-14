@@ -89,7 +89,10 @@ void test('the independent player owns identical Chinese font and stroke assets'
   );
   assert.ok(css.includes('.classroom-shell .player-dock'));
   assert.ok(css.includes('will-change: transform, opacity'));
-  assert.match(css, /\.grammar-node \{[^}]*border: 2px solid #4f4b52/);
+  assert.match(
+    css,
+    /\.grammar-node \{[^}]*border: 2px solid var\(--classroom-rule, #4f4b52\)/,
+  );
   assert.ok(!css.includes('@import') && !css.includes('@apply'));
 });
 

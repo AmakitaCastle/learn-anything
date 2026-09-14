@@ -6,8 +6,9 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
-import { RotateCcw, SkipBack, Volume2, VolumeX } from 'lucide-react';
+import { Moon, Sun, RotateCcw, SkipBack, Volume2, VolumeX } from 'lucide-react';
 import {
   Button,
   NativeSelect,
@@ -37,7 +38,14 @@ import {
 } from './runtime.ts';
 import type { LessonSpec } from '@learn-anything/lesson-schema';
 import { TeachingBoard } from './teaching-board.tsx';
+import {
+  savedTheme,
+  initialTheme,
+  subscribeTheme,
+  saveTheme,
+} from './theme.ts';
 export { ClassroomClock, classroomAt, prepareLesson };
+export type { ClassroomTheme } from './board/index.tsx';
 export { createVisualRegistry, registerGrammar } from './runtime.ts';
 export type {
   VisualGrammar,
@@ -65,10 +73,13 @@ export function ClassroomSurface({
   prepared,
   time,
   playing = false,
+  video = false,
 }: {
   prepared: PreparedLesson;
   time: number;
   playing?: boolean;
+  /** Export presentation: show the current teaching segment without scrolling. */
+  video?: boolean;
 }) {
   const frame = classroomAt(prepared, time),
     { lesson } = prepared,
@@ -101,7 +112,12 @@ export function ClassroomSurface({
         </div>
       </header>
       {lesson.teaching ? (
-        <TeachingBoard prepared={prepared} time={time} playing={playing} />
+        <TeachingBoard
+          prepared={prepared}
+          time={time}
+          playing={playing}
+          video={video}
+        />
       ) : (
         <div className="board-flow">
           <section className="board-diagram" aria-label={p.diagramTitle}>
@@ -171,6 +187,8 @@ const PreparedPlayer = forwardRef<
   }
 >(function PreparedPlayer({ prepared, onPlaybackChange }, ref) {
   const { lesson } = prepared;
+  const theme = useSyncExternalStore(subscribeTheme, savedTheme, initialTheme);
+  const toggleTheme = () => saveTheme(theme === 'light' ? 'dark' : 'light');
   const audioRef = useRef<HTMLAudioElement>(null),
     clockRef = useRef<ClassroomClock | null>(null),
     callbackRef = useRef(onPlaybackChange);
@@ -217,9 +235,10 @@ const PreparedPlayer = forwardRef<
     [],
   );
   return (
-    <HandwritingProvider bundle={lesson.handwriting}>
+    <HandwritingProvider bundle={lesson.handwriting} theme={theme}>
       <main
         className="classroom-shell"
+        data-theme={theme}
         data-lesson-id={lesson.id}
         data-classroom-time={playback.time}
         data-classroom-ready={playback.ready}
@@ -345,6 +364,21 @@ const PreparedPlayer = forwardRef<
                 </NativeSelectOption>
               ))}
             </NativeSelect>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-lg"
+              onClick={toggleTheme}
+              aria-label={theme === 'light' ? '切换到深色' : '切换到浅色'}
+              aria-pressed={theme === 'dark'}
+              title={theme === 'light' ? '切换到深色' : '切换到浅色'}
+            >
+              {theme === 'light' ? (
+                <Moon aria-hidden="true" />
+              ) : (
+                <Sun aria-hidden="true" />
+              )}
+            </Button>
           </div>
         </section>
       </main>

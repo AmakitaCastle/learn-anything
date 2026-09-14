@@ -27,7 +27,15 @@ async function load() {
   const registry = await loadLessonVisualRegistry(
     lesson.visuals.map((visual) => visual.grammar),
   );
-  root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
+  if (new URLSearchParams(location.search).get('video') === '1') {
+    const { mountVideo } = await import('./export');
+    const theme = new URLSearchParams(location.search).get('theme') ?? 'light';
+    if (theme !== 'light' && theme !== 'dark')
+      throw new Error('视频配色无效。');
+    await mountVideo(root, lesson, registry, theme);
+  } else {
+    root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
+  }
 }
 load().catch(() =>
   root.render(<p role="alert">课程载入失败，请检查终端输出并重新打开课程。</p>),

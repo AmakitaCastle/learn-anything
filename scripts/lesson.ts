@@ -23,6 +23,11 @@ import {
 import { openLessonBrowser, startLessonViewer } from './lesson-viewer.ts';
 import { formatLessonTaskError } from './lesson-errors.ts';
 import { prepareDemoLesson } from './lesson-demo.ts';
+import {
+  exportLessonVideo,
+  prepareVideoExport,
+  videoExportOptions,
+} from './lesson-video.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const help = `一条命令：备课 → 编译 → 本地播放
@@ -32,6 +37,8 @@ const help = `一条命令：备课 → 编译 → 本地播放
   npm run lesson -- --brief examples/briefs/water-cycle.json --generate
   npm run lesson -- --draft path/to/lesson.draft.json --cached
   npm run lesson -- --play outputs/runs/<id>/<run>
+  npm run lesson -- --play outputs/runs/<id>/<run> --export-video outputs/lesson.mp4 --aspect-ratio 9:16
+  npm run demo -- --export-video outputs/demo.mp4 --aspect-ratio 16:9
 
 不带 --generate / --cached 时仅离线预检。
 --generate 明确允许文本模型及缺失语音缓存的付费请求。
@@ -42,6 +49,11 @@ const help = `一条命令：备课 → 编译 → 本地播放
 --max-output-tokens 正整数：可选输出上限；默认不设上限，使用接口默认值（Anthropic 默认 8192）。
 --output 新目录、--no-play 只保存课程、--no-open 不自动打开浏览器。
 --port 端口：默认自动选空闲端口，只监听 127.0.0.1。
+--export-video 新的 .mp4 文件：导出后退出，不打开播放器；输出目录须存在。
+--aspect-ratio 16:9 / 9:16 / 1:1：默认 16:9；--fps 1–60：默认 24。
+--export-theme light|dark：导出配色，默认 light（白底），dark 为黑底白字。
+--export-speed 0.25–3：导出倍速，默认 1；画面与旁白同步变速，保持音调。
+导出需要 FFmpeg／FFprobe 和 npx playwright install chromium，不调用模型或语音。
 播放器启动后在终端按 Ctrl+C 退出，课程文件保留。`;
 
 export function parseLessonCommand(args: string[]) {
@@ -64,6 +76,11 @@ export function parseLessonCommand(args: string[]) {
       port: { type: 'string', default: '0' },
       'no-play': { type: 'boolean', default: false },
       'no-open': { type: 'boolean', default: false },
+      'export-video': { type: 'string' },
+      'aspect-ratio': { type: 'string' },
+      fps: { type: 'string' },
+      'export-speed': { type: 'string' },
+      'export-theme': { type: 'string' },
       'repair-attempts': { type: 'string', default: '0' },
       'json-mode': { type: 'string', default: 'true' },
       'token-limit-field': { type: 'string', default: 'max_completion_tokens' },
@@ -87,6 +104,32 @@ export function parseLessonCommand(args: string[]) {
   )
     throw new Error('主题输入重复。');
   const topic = values.topic ?? parsed.positionals[0];
+  const video =
+    values['export-video'] === undefined
+      ? undefined
+      : videoExportOptions({
+          output: values['export-video'],
+          aspectRatio: values['aspect-ratio'],
+          fps: values.fps,
+          speed: values['export-speed'],
+          theme: values['export-theme'],
+        });
+  if (
+    !video &&
+    (values['aspect-ratio'] !== undefined ||
+      values.fps !== undefined ||
+      values['export-speed'] !== undefined ||
+      values['export-theme'] !== undefined)
+  )
+    throw new Error('比例、帧率、导出倍速和配色参数需要 --export-video。');
+  if (
+    video &&
+    !values.generate &&
+    !values.cached &&
+    !values.play &&
+    !values.demo
+  )
+    throw new Error('导出需要已保存课程、Demo，或明确的生成／缓存编译模式。');
   if (
     [
       topic,
@@ -153,6 +196,7 @@ export function parseLessonCommand(args: string[]) {
     port,
     repairs,
     maxOutputTokens,
+    video,
     checkOnly:
       !values.generate && !values.cached && !values.play && !values.demo,
   };
@@ -163,7 +207,7 @@ export async function main(args = process.argv.slice(2)) {
     console.log(help);
     return;
   }
-  const { values, topic, port, repairs, maxOutputTokens, checkOnly } =
+  const { values, topic, port, repairs, maxOutputTokens, checkOnly, video } =
     parseLessonCommand(args);
   if (values.help) {
     console.log(help);
@@ -210,6 +254,7 @@ export async function main(args = process.argv.slice(2)) {
   let viewer: Awaited<ReturnType<typeof startLessonViewer>> | undefined;
   let demo: Awaited<ReturnType<typeof prepareDemoLesson>> | undefined;
   try {
+    if (video) await prepareVideoExport(video, lifecycle.signal);
     let directory = values.play ? resolve(values.play) : undefined;
     if (values.demo) {
       console.log('播放自带升温示例课：不请求模型或语音服务，无需 API Key。');
@@ -297,9 +342,29 @@ export async function main(args = process.argv.slice(2)) {
       console.log(
         `课程已保存：${directory}\n实测时长 ${result.duration} 秒；知识、听感和低置信度词仍需人工复核。`,
       );
-      if (values['no-play']) return;
+      if (values['no-play'] && !video) return;
     }
     if (lifecycle.signal.aborted) return;
+    if (video) {
+      console.log(
+        `导出 ${video.aspectRatio} MP4（${video.fps} 帧/秒，${video.speed} 倍速，${video.theme === 'dark' ? '黑底' : '白底'}），不请求模型或语音…`,
+      );
+      let lastProgress = -1;
+      const result = await exportLessonVideo(directory!, video, {
+        signal: lifecycle.signal,
+        onProgress(frame, total) {
+          const progress = Math.floor((frame / total) * 10);
+          if (progress > lastProgress) {
+            console.log(`视频导出：${Math.min(progress * 10, 100)}%`);
+            lastProgress = progress;
+          }
+        },
+      });
+      console.log(
+        `视频已保存：${result.output}\n${result.width}×${result.height}，${result.duration} 秒，${result.speed} 倍速，含旁白。`,
+      );
+      return;
+    }
     console.log('4/4 启动本地播放器…');
     viewer = await startLessonViewer(directory!, { port });
     if (lifecycle.signal.aborted) return;

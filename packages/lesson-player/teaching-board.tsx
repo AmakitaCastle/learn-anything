@@ -84,10 +84,12 @@ export function TeachingBoard({
   prepared,
   time,
   playing,
+  video = false,
 }: {
   prepared: PreparedLesson;
   time: number;
   playing: boolean;
+  video?: boolean;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const [following, setFollowing] = useState(true);
@@ -159,7 +161,7 @@ export function TeachingBoard({
   }, []);
 
   useEffect(() => {
-    if (!following || !target) return;
+    if (video || !following || !target) return;
     const line = Array.from(
       container.current?.querySelectorAll<HTMLElement>(
         '[data-follow-target]',
@@ -173,17 +175,19 @@ export function TeachingBoard({
       top: Math.max(0, window.scrollY + rect.top - 70),
       behavior: 'instant',
     });
-  }, [target, following, resume, playing]);
+  }, [target, following, resume, playing, video]);
 
   return (
     <div className="teaching-board" ref={container} data-following={following}>
       {groups
         .filter((group) =>
-          group.entries.some(({ segment }) => segment.at <= time),
+          group.entries.some(({ segment }) =>
+            video ? segment.id === current?.segment.id : segment.at <= time,
+          ),
         )
         .map((group) => {
-          const visible = group.entries.filter(
-            ({ segment }) => segment.at <= time,
+          const visible = group.entries.filter(({ segment }) =>
+            video ? segment.id === current?.segment.id : segment.at <= time,
           );
           const boardIds = new Set(
             group.entries.flatMap(({ segment }) => segment.boardIds),
@@ -236,7 +240,7 @@ export function TeachingBoard({
                       />
                     </h2>
                     {lines
-                      .filter((line) => line.at <= time)
+                      .filter((line) => video || line.at <= time)
                       .map((line) => (
                         <Sentence
                           key={line.id}
