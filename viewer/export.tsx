@@ -5,6 +5,7 @@ import {
   prepareLesson,
   type LessonSpec,
   type VisualRegistry,
+  type ClassroomTheme,
 } from '@learn-anything/lesson-player';
 import {
   HandwritingProvider,
@@ -28,6 +29,7 @@ export async function mountVideo(
   root: Root,
   lesson: LessonSpec,
   registry: VisualRegistry,
+  theme: ClassroomTheme = 'light',
 ) {
   const prepared = prepareLesson(lesson, registry);
   const bridge: VideoFrameBridge = {
@@ -37,9 +39,10 @@ export async function mountVideo(
         throw new Error('视频帧时间无效。');
       flushSync(() =>
         root.render(
-          <HandwritingProvider bundle={lesson.handwriting}>
+          <HandwritingProvider bundle={lesson.handwriting} theme={theme}>
             <main
               className="classroom-shell video-frame"
+              data-theme={theme}
               data-video-time={seconds}
               style={
                 {

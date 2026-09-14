@@ -8,12 +8,12 @@ import {
 } from './model.ts';
 
 const colors = {
-  ink: '#45424c',
-  blue: '#46788c',
-  amber: '#b98637',
-  rose: '#b26476',
-  green: '#58816b',
-  muted: '#92919a',
+  ink: 'var(--scene-ink, #45424c)',
+  blue: 'var(--scene-blue, #46788c)',
+  amber: 'var(--scene-amber, #b98637)',
+  rose: 'var(--scene-rose, #b26476)',
+  green: 'var(--scene-green, #58816b)',
+  muted: 'var(--scene-muted, #92919a)',
 };
 const W = 960,
   H = 540;
@@ -94,7 +94,7 @@ function Element({ element: e }: { element: SceneElement }) {
             width={w * 0.5}
             height={h * 0.72}
             rx="10"
-            fill="#fffdf8"
+            fill="var(--scene-paper, #fffdf8)"
           />
           <path d={`M${-w * 0.1} ${h * 0.18} h${w * 0.2}`} />
           <Label text={e.label} width={w} y={h * 0.55} />
@@ -105,7 +105,7 @@ function Element({ element: e }: { element: SceneElement }) {
         <>
           <path
             d={`M${-w / 2 + 14} ${-h / 2} H${w / 2 - 14} Q${w / 2} ${-h / 2} ${w / 2} ${-h / 2 + 14} V${h / 2 - 14} Q${w / 2} ${h / 2} ${w / 2 - 14} ${h / 2} H${-w * 0.25} L${-w * 0.38} ${h / 2 + 15} V${h / 2} H${-w / 2 + 14} Q${-w / 2} ${h / 2} ${-w / 2} ${h / 2 - 14} V${-h / 2 + 14} Q${-w / 2} ${-h / 2} ${-w / 2 + 14} ${-h / 2} Z`}
-            fill="#fffdf8"
+            fill="var(--scene-paper, #fffdf8)"
           />
           <Label text={e.label} width={w - 20} y={5} />
         </>
@@ -113,9 +113,19 @@ function Element({ element: e }: { element: SceneElement }) {
     case 'thought':
       return (
         <>
-          <ellipse rx={w / 2} ry={h / 2} fill="#fffdf8" />
-          <circle cx={-w * 0.27} cy={h * 0.55} r="5" fill="#fffdf8" />
-          <circle cx={-w * 0.33} cy={h * 0.72} r="3" fill="#fffdf8" />
+          <ellipse rx={w / 2} ry={h / 2} fill="var(--scene-paper, #fffdf8)" />
+          <circle
+            cx={-w * 0.27}
+            cy={h * 0.55}
+            r="5"
+            fill="var(--scene-paper, #fffdf8)"
+          />
+          <circle
+            cx={-w * 0.33}
+            cy={h * 0.72}
+            r="3"
+            fill="var(--scene-paper, #fffdf8)"
+          />
           <Label text={e.label} width={w - 28} y={5} />
         </>
       );
@@ -138,7 +148,7 @@ function Element({ element: e }: { element: SceneElement }) {
         <>
           <path
             d={`M${-w / 2} ${-h / 2} H${w / 2 - 20} L${w / 2} ${-h / 2 + 20} V${h / 2} H${-w / 2} Z M${w / 2 - 20} ${-h / 2} V${-h / 2 + 20} H${w / 2}`}
-            fill="#fffdf8"
+            fill="var(--scene-paper, #fffdf8)"
           />
           <Label text={e.label} width={w - 22} y={5} />
         </>
@@ -152,7 +162,7 @@ function Element({ element: e }: { element: SceneElement }) {
             width={w}
             height={h}
             rx="13"
-            fill="#fffdf8"
+            fill="var(--scene-paper, #fffdf8)"
           />
           <Label text={e.label} width={w - 22} y={5} />
         </>

@@ -76,4 +76,12 @@ button {
   top: 12px;
   z-index: 5;
   background: white;
+  color: #252329;
+  color-scheme: light;
+}
+
+body:has(.classroom-shell[data-theme='dark']) .example-switch {
+  background: #17141d;
+  color: #fff;
+  color-scheme: dark;
 }

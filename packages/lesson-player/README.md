@@ -15,6 +15,8 @@ export const Classroom = ({ lesson }: { lesson: LessonSpec }) => (
 );
 ```
 
+播放器底部提供浅色／深色切换，默认浅色；选择保存于宿主来源的 `localStorage`（`learn-anything-theme`），存储不可用时仍可切换。主题变化只重绘笔画，不改变音频时钟。静态帧宿主可在 `.classroom-shell` 上设置 `data-theme="light|dark"`，并向 `HandwritingProvider` 传入相同的 `theme` 以更新已完成的画布笔画。
+
 完整控制接口：`play/pause/seek/restart/setSpeed/setMuted/getSnapshot`，以及 `onPlaybackChange`。扩展动画使用 `registerGrammar` 和 `createVisualRegistry`；默认语法见 `@learn-anything/lesson-player/grammars`。
 
 静态帧可使用 `ClassroomSurface`，传入 `prepareLesson()` 的结果与 `time`；额外传 `video` 时只显示当前讲解段、预留该段完整文本布局且不自动滚动。默认交互播放行为不变。MP4 编码和输出比例由 CLI 宿主实现，不给 React 播放包增加 FFmpeg／Chromium 依赖，见[视频导出](../../docs/video-export.md)。

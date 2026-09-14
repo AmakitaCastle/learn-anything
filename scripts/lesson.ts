@@ -51,6 +51,8 @@ const help = `一条命令：备课 → 编译 → 本地播放
 --port 端口：默认自动选空闲端口，只监听 127.0.0.1。
 --export-video 新的 .mp4 文件：导出后退出，不打开播放器；输出目录须存在。
 --aspect-ratio 16:9 / 9:16 / 1:1：默认 16:9；--fps 1–60：默认 24。
+--export-theme light|dark：导出配色，默认 light（白底），dark 为黑底白字。
+--export-speed 0.25–3：导出倍速，默认 1；画面与旁白同步变速，保持音调。
 导出需要 FFmpeg／FFprobe 和 npx playwright install chromium，不调用模型或语音。
 播放器启动后在终端按 Ctrl+C 退出，课程文件保留。`;
 
@@ -77,6 +79,8 @@ export function parseLessonCommand(args: string[]) {
       'export-video': { type: 'string' },
       'aspect-ratio': { type: 'string' },
       fps: { type: 'string' },
+      'export-speed': { type: 'string' },
+      'export-theme': { type: 'string' },
       'repair-attempts': { type: 'string', default: '0' },
       'json-mode': { type: 'string', default: 'true' },
       'token-limit-field': { type: 'string', default: 'max_completion_tokens' },
@@ -107,12 +111,17 @@ export function parseLessonCommand(args: string[]) {
           output: values['export-video'],
           aspectRatio: values['aspect-ratio'],
           fps: values.fps,
+          speed: values['export-speed'],
+          theme: values['export-theme'],
         });
   if (
     !video &&
-    (values['aspect-ratio'] !== undefined || values.fps !== undefined)
+    (values['aspect-ratio'] !== undefined ||
+      values.fps !== undefined ||
+      values['export-speed'] !== undefined ||
+      values['export-theme'] !== undefined)
   )
-    throw new Error('比例和帧率参数需要 --export-video。');
+    throw new Error('比例、帧率、导出倍速和配色参数需要 --export-video。');
   if (
     video &&
     !values.generate &&
@@ -338,7 +347,7 @@ export async function main(args = process.argv.slice(2)) {
     if (lifecycle.signal.aborted) return;
     if (video) {
       console.log(
-        `导出 ${video.aspectRatio} MP4（${video.fps} 帧/秒），不请求模型或语音…`,
+        `导出 ${video.aspectRatio} MP4（${video.fps} 帧/秒，${video.speed} 倍速，${video.theme === 'dark' ? '黑底' : '白底'}），不请求模型或语音…`,
       );
       let lastProgress = -1;
       const result = await exportLessonVideo(directory!, video, {
@@ -352,7 +361,7 @@ export async function main(args = process.argv.slice(2)) {
         },
       });
       console.log(
-        `视频已保存：${result.output}\n${result.width}×${result.height}，${result.duration} 秒，含旁白。`,
+        `视频已保存：${result.output}\n${result.width}×${result.height}，${result.duration} 秒，${result.speed} 倍速，含旁白。`,
       );
       return;
     }

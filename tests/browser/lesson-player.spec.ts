@@ -401,3 +401,105 @@ for (const at of [
     );
   });
 }
+
+test('theme switches completed canvas ink without changing the clock and persists on reload', async ({
+  page,
+}, info) => {
+  await seekTo(page, duration);
+  const light = await settledBoard(page);
+  const before = await audioState(page);
+  const shell = page.locator('.classroom-shell');
+  await expect(shell).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: '切换到深色', exact: true }).click();
+  await expect(shell).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(page.locator('.example-switch')).toHaveCSS(
+    'background-color',
+    'rgb(23, 20, 29)',
+  );
+  await expect(page.getByLabel('示例课程')).toHaveCSS(
+    'color',
+    'rgb(255, 255, 255)',
+  );
+  await expect(page.locator('.paper-heading h1')).toHaveCSS(
+    'color',
+    'rgb(255, 255, 255)',
+  );
+  await expect(
+    page.getByRole('button', { name: '切换到浅色', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await settledBoard(page);
+  // Canvas pixels, not just inherited CSS, must repaint completed handwriting.
+  const whitePixels = await page
+    .locator('.paper-heading h1 canvas')
+    .evaluateAll((elements) => {
+      let white = 0;
+      for (const element of elements) {
+        const canvas = element as HTMLCanvasElement;
+        const data = canvas
+          .getContext('2d')!
+          .getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 0; i < data.length; i += 4)
+          if (
+            data[i] > 220 &&
+            data[i + 1] > 220 &&
+            data[i + 2] > 220 &&
+            data[i + 3] > 128
+          )
+            white++;
+      }
+      return white;
+    });
+  expect(whitePixels).toBeGreaterThan(100);
+  expect(await audioState(page)).toEqual(before);
+  await page.screenshot({
+    path: info.outputPath('dark-theme.png'),
+  });
+  await page.reload();
+  await readyLesson(page);
+  await expect(shell).toHaveAttribute('data-theme', 'dark');
+  await seekTo(page, duration);
+  await page.getByRole('button', { name: '切换到浅色', exact: true }).click();
+  await expectSameBoard(
+    light,
+    await settledBoard(page),
+    'theme-roundtrip',
+    info,
+  );
+  await page.reload();
+  await readyLesson(page);
+  await expect(shell).toHaveAttribute('data-theme', 'light');
+});
+
+test('theme switching works on mobile when preference storage is unavailable', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => {
+      throw new Error('blocked');
+    };
+    Storage.prototype.setItem = () => {
+      throw new Error('blocked');
+    };
+  });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.reload();
+  await readyLesson(page);
+  await expect(page.locator('.classroom-shell')).toHaveAttribute(
+    'data-theme',
+    'light',
+  );
+  await page.getByRole('button', { name: '切换到深色', exact: true }).click();
+  await expect(page.locator('.classroom-shell')).toHaveAttribute(
+    'data-theme',
+    'dark',
+  );
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(375);
+  await page.getByRole('button', { name: '切换到浅色', exact: true }).click();
+  await expect(page.locator('.classroom-shell')).toHaveAttribute(
+    'data-theme',
+    'light',
+  );
+});

@@ -24,6 +24,8 @@ export type VideoExportOptions = {
   output: string;
   aspectRatio: VideoRatio;
   fps: number;
+  speed: number;
+  theme: 'light' | 'dark';
 };
 export class VideoExportError extends Error {}
 
@@ -31,6 +33,8 @@ export function videoExportOptions(input: {
   output: string;
   aspectRatio?: string;
   fps?: string | number;
+  speed?: string | number;
+  theme?: string;
 }): VideoExportOptions {
   const ratio = input.aspectRatio ?? '16:9';
   if (!Object.hasOwn(VIDEO_RATIOS, ratio))
@@ -38,6 +42,10 @@ export function videoExportOptions(input: {
   const fps = input.fps === undefined ? 24 : Number(input.fps);
   if (!Number.isInteger(fps) || fps < 1 || fps > 60)
     throw new VideoExportError('视频帧率必须是 1–60 的整数。');
+  const speed = parseVideoSpeed(input.speed);
+  const theme = input.theme ?? 'light';
+  if (theme !== 'light' && theme !== 'dark')
+    throw new VideoExportError('视频配色仅支持 light（白底）或 dark（黑底）。');
   if (
     !input.output.trim() ||
     /[\\/]$/.test(input.output) ||
@@ -48,7 +56,33 @@ export function videoExportOptions(input: {
     output: resolve(input.output),
     aspectRatio: ratio as VideoRatio,
     fps,
+    speed,
+    theme,
   };
+}
+function parseVideoSpeed(input?: string | number) {
+  const speed = input === undefined ? 1 : Number(input);
+  if (!Number.isFinite(speed) || speed < 0.25 || speed > 3)
+    throw new VideoExportError('视频导出倍速必须在 0.25–3 之间。');
+  return speed;
+}
+
+export function videoExportAudioFilter(input: number) {
+  let speed = parseVideoSpeed(input);
+  if (speed === 1) return 'apad'; // Preserve the original-speed audio path.
+  const filters: string[] = [];
+  // Each atempo stage stays within 0.5–2: slow presets remain compatible,
+  // and faster than 2x never use atempo's sample-skipping mode.
+  while (speed < 0.5) {
+    filters.push('atempo=0.5');
+    speed /= 0.5;
+  }
+  while (speed > 2) {
+    filters.push('atempo=2');
+    speed /= 2;
+  }
+  filters.push(`atempo=${speed}`, 'apad');
+  return filters.join(',');
 }
 const run = promisify(execFile);
 const cancelled = () =>
@@ -92,10 +126,17 @@ export async function prepareVideoExport(
       signal,
     });
     if (!/\blibx264\b/.test(stdout)) throw new Error('encoder');
+    if (options.speed !== 1) {
+      const filters = await run('ffmpeg', ['-hide_banner', '-filters'], {
+        timeout: 10000,
+        signal,
+      });
+      if (!/\batempo\b/.test(filters.stdout)) throw new Error('tempo');
+    }
   } catch {
     check(signal);
     throw new VideoExportError(
-      '导出需要 FFmpeg（含 libx264）、FFprobe 和已存在的输出目录。',
+      '导出需要 FFmpeg（含 libx264，变速时需 atempo）、FFprobe 和已存在的输出目录。',
     );
   }
   try {
@@ -126,6 +167,7 @@ export async function exportLessonVideo(
     JSON.parse(await readFile(join(directory, 'lesson.json'), 'utf8')),
   );
   const audioPath = resolve(directory, 'narration.mp3');
+  const exportDuration = lesson.duration / options.speed;
   try {
     const { stdout } = await run(
       'ffprobe',
@@ -189,7 +231,7 @@ export async function exportLessonVideo(
       viewport: VIDEO_RATIOS[options.aspectRatio],
       deviceScaleFactor: 1,
       locale: 'zh-CN',
-      colorScheme: 'light',
+      colorScheme: options.theme,
     });
     let renderFailed = false;
     page.on('pageerror', () => {
@@ -202,7 +244,7 @@ export async function exportLessonVideo(
         ? route.continue()
         : route.abort(),
     );
-    await page.goto(viewer.url + '?video=1');
+    await page.goto(viewer.url + '?video=1&theme=' + options.theme);
     await page.waitForFunction(() => Boolean(window.lessonVideo));
     encoder = spawn(
       'ffmpeg',
@@ -245,9 +287,9 @@ export async function exportLessonVideo(
         '-b:a',
         '192k',
         '-af',
-        'apad',
+        videoExportAudioFilter(options.speed),
         '-t',
-        String(lesson.duration),
+        String(exportDuration),
         '-movflags',
         '+faststart',
         encoded,
@@ -259,12 +301,12 @@ export async function exportLessonVideo(
       encoder!.once('close', (code) => done(code === 0));
     });
     encoder.stdin!.on('error', () => undefined);
-    const total = Math.ceil(lesson.duration * options.fps);
+    const total = Math.ceil(exportDuration * options.fps);
     for (let index = 0; index < total; index++) {
       check(signal);
       await page.evaluate(
         (seconds) => window.lessonVideo!.render(seconds),
-        index / options.fps,
+        Math.min(lesson.duration, (index / options.fps) * options.speed),
       );
       if (renderFailed) throw new Error('render');
       const png = await page.screenshot({ type: 'png', caret: 'hide' });
@@ -283,8 +325,10 @@ export async function exportLessonVideo(
     return {
       output: options.output,
       ...VIDEO_RATIOS[options.aspectRatio],
-      duration: lesson.duration,
+      duration: exportDuration,
       fps: options.fps,
+      speed: options.speed,
+      theme: options.theme,
     };
   } catch (error) {
     check(signal);

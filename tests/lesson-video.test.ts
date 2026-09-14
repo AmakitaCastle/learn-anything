@@ -9,6 +9,7 @@ import {
   VIDEO_RATIOS,
   prepareVideoExport,
   videoExportOptions,
+  videoExportAudioFilter,
 } from '../scripts/lesson-video.ts';
 
 void test('video defaults and presets have exact ratios and even H.264 dimensions', () => {
@@ -16,6 +17,8 @@ void test('video defaults and presets have exact ratios and even H.264 dimension
     output: resolve('lesson.mp4'),
     aspectRatio: '16:9',
     fps: 24,
+    speed: 1,
+    theme: 'light',
   });
   for (const [ratio, size] of Object.entries(VIDEO_RATIOS)) {
     const [width, height] = ratio.split(':').map(Number);
@@ -37,8 +40,21 @@ void test('invalid export settings fail before rendering or writing', () => {
     assert.throws(() =>
       videoExportOptions({ output: 'lesson.mp4', aspectRatio }),
     );
+  for (const theme of ['', 'black', 'white', 'system', '__proto__'])
+    assert.throws(() => videoExportOptions({ output: 'lesson.mp4', theme }));
   for (const fps of ['', '0', '-1', '1.5', '61', 'NaN', 'Infinity'])
     assert.throws(() => videoExportOptions({ output: 'lesson.mp4', fps }));
+  for (const speed of [
+    '',
+    '0',
+    '-1',
+    '0.24',
+    '3.01',
+    'NaN',
+    'Infinity',
+    '1.5,apad',
+  ])
+    assert.throws(() => videoExportOptions({ output: 'lesson.mp4', speed }));
   for (const output of ['', ' ', 'lesson.webm', 'lesson', 'lesson.mp4/'])
     assert.throws(() => videoExportOptions({ output }));
 });
@@ -57,9 +73,15 @@ void test('CLI exports saved, shipped or explicitly generated courses, never pur
       '9:16',
       '--fps',
       '30',
+      '--export-speed',
+      '1.5',
+      '--export-theme',
+      'dark',
     ]);
     assert.equal(parsed.video?.aspectRatio, '9:16');
     assert.equal(parsed.video?.fps, 30);
+    assert.equal(parsed.video?.speed, 1.5);
+    assert.equal(parsed.video?.theme, 'dark');
     assert.equal(parsed.checkOnly, false);
   }
   assert.equal(parseLessonCommand(['--demo']).video, undefined);
@@ -68,10 +90,35 @@ void test('CLI exports saved, shipped or explicitly generated courses, never pur
     ['topic', '--export-video', 'lesson.mp4'],
     ['--demo', '--aspect-ratio', '9:16'],
     ['--demo', '--fps', '30'],
+    ['--demo', '--export-theme', 'dark'],
+    ['--demo', '--export-video', 'lesson.mp4', '--export-theme', 'black'],
+    ['--demo', '--export-speed', '1.5'],
+    ['topic', '--export-speed', '1.5'],
+    ['--demo', '--export-video', 'lesson.mp4', '--export-speed', '0'],
     ['--demo', '--export-video', 'lesson.mp4', '--aspect-ratio', '4:3'],
     ['--demo', '--export-video', 'lesson.mp4', '--fps', '100'],
   ])
     assert.throws(() => parseLessonCommand(args));
+});
+
+void test('export speed presets use pitch-preserving atempo stages within 0.5–2', () => {
+  assert.equal(videoExportAudioFilter(1), 'apad');
+  for (const speed of [0.25, 0.5, 0.75, 1.25, 1.5, 2, 3]) {
+    assert.equal(
+      videoExportOptions({ output: 'lesson.mp4', speed }).speed,
+      speed,
+    );
+    const factors = videoExportAudioFilter(speed)
+      .split(',')
+      .filter((filter) => filter.startsWith('atempo='))
+      .map((filter) => Number(filter.slice(7)));
+    assert.ok(factors.every((factor) => factor >= 0.5 && factor <= 2));
+    assert.ok(
+      Math.abs(
+        factors.reduce((product, factor) => product * factor, 1) - speed,
+      ) < 1e-10,
+    );
+  }
 });
 void test('export refuses existing files and dangling symlinks without modifying them', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'learn-video-existing-'));

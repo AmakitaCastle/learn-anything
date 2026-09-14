@@ -68,6 +68,10 @@ npm --prefix /Users/castleamakit/Documents/code/ai/learn-anything run lesson -- 
 
 主题、`--brief`、`--draft`、`--play` 必须四选一。`--cached` 仅适用于已有材料；不调用文本模型、不合成缺失语音。模型失败不自动重试或切换供应商；修复请求必须显式允许。
 
+导出时可加 `--export-theme dark` 选择黑底白字（默认 `light` 白底），独立于播放器保存的主题；须与 `--export-video` 一起使用。
+
+导出时可加 `--export-speed 1.5`（0.25–3，默认 1），画面与旁白同步变速并保持音调；输出时长随倍速变化。参数须与 `--export-video` 一起使用，详见[视频导出](./video-export.md)。
+
 ## 保存与恢复
 
 默认目录为忽略的 `outputs/runs/<id>/<时间戳-随机标识>/`，包括：

@@ -196,6 +196,34 @@ test('scene classroom freezes motion and rebuilds identical mid-motion poses aft
           bounds.diagramRight + 27,
         );
     }
+    const position = await diagram
+      .locator('[data-scene-element="reason"]')
+      .getAttribute('transform');
+    await page.getByRole('button', { name: '切换到深色', exact: true }).click();
+    await expect(shell).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    await expect(diagram.locator('[data-scene-element]')).not.toHaveCount(0);
+    const palette = await diagram
+      .locator('[data-scene-element]')
+      .evaluateAll((elements) =>
+        elements.map((element) => getComputedStyle(element).stroke),
+      );
+    expect(
+      palette.every((color) =>
+        [
+          'rgb(255, 255, 255)',
+          'rgb(139, 203, 229)',
+          'rgb(243, 207, 117)',
+          'rgb(242, 160, 181)',
+          'rgb(145, 211, 172)',
+          'rgb(182, 176, 193)',
+        ].includes(color),
+      ),
+    ).toBe(true);
+    expect(
+      await diagram
+        .locator('[data-scene-element="reason"]')
+        .getAttribute('transform'),
+    ).toBe(position);
     expect(errors).toEqual([]);
   } finally {
     await viewer?.close();

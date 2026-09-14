@@ -29,7 +29,10 @@ async function load() {
   );
   if (new URLSearchParams(location.search).get('video') === '1') {
     const { mountVideo } = await import('./export');
-    await mountVideo(root, lesson, registry);
+    const theme = new URLSearchParams(location.search).get('theme') ?? 'light';
+    if (theme !== 'light' && theme !== 'dark')
+      throw new Error('视频配色无效。');
+    await mountVideo(root, lesson, registry, theme);
   } else {
     root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
   }
