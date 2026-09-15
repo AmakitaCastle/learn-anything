@@ -16,6 +16,10 @@ import {
   type LessonAudioProcessor,
   type LessonHandwritingProvider,
 } from '@learn-anything/content-generator';
+import {
+  parseLessonDraft,
+  type LessonDraft,
+} from '@learn-anything/lesson-schema';
 
 export type LessonWorkflowInput = { brief: LessonBrief } | { draft: unknown };
 export type LessonWorkflowDependencies = {
@@ -23,9 +27,10 @@ export type LessonWorkflowDependencies = {
   speech: LessonSpeechProvider;
   audio: LessonAudioProcessor;
   handwriting?: LessonHandwritingProvider | false;
+  review?: (draft: LessonDraft, directory: string) => Promise<unknown>;
   signal?: AbortSignal;
   onStage?: (
-    stage: 'prepare' | 'draft' | 'compile' | 'saved',
+    stage: 'prepare' | 'draft' | 'review' | 'compile' | 'saved',
     directory?: string,
   ) => void;
 };
@@ -108,8 +113,55 @@ export async function runLessonWorkflow(
     JSON.stringify(generated.report, null, 2) + '\n',
     { flag: 'wx' },
   );
+  let material = generated.draft;
+  if (dependencies.review) {
+    dependencies.onStage?.('review', directory);
+    material = parseLessonDraft(
+      await dependencies.review(generated.draft, directory),
+      lessonCapabilities,
+    );
+    check();
+    if (
+      material.id !== generated.draft.id ||
+      material.segments.length !== generated.draft.segments.length ||
+      material.segments.some(
+        (segment, index) => segment.id !== generated.draft.segments[index].id,
+      ) ||
+      material.visuals.length !== generated.draft.visuals.length ||
+      material.visuals.some(
+        (visual, index) =>
+          visual.id !== generated.draft.visuals[index].id ||
+          visual.grammar !== generated.draft.visuals[index].grammar,
+      )
+    )
+      throw new Error('审核材料改变了课程引用，未交给编译器。');
+    const original = createHash('sha256')
+      .update(generated.draftJson)
+      .digest('hex');
+    const reviewedJson = JSON.stringify(material, null, 2) + '\n';
+    await writeFile(
+      join(directory, 'lesson.reviewed.draft.json'),
+      reviewedJson,
+      { flag: 'wx' },
+    );
+    await writeFile(
+      join(directory, 'review.json'),
+      JSON.stringify(
+        {
+          humanReview: 'approved',
+          originalSha256: original,
+          reviewedSha256: createHash('sha256')
+            .update(reviewedJson)
+            .digest('hex'),
+        },
+        null,
+        2,
+      ) + '\n',
+      { flag: 'wx' },
+    );
+  }
   dependencies.onStage?.('compile', directory);
-  const compiled = await compileLessonDraft(generated.draft, {
+  const compiled = await compileLessonDraft(material, {
     capabilities: lessonCapabilities,
     speech: {
       async synthesize(segment) {

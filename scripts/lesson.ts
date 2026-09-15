@@ -23,6 +23,7 @@ import {
 import { openLessonBrowser, startLessonViewer } from './lesson-viewer.ts';
 import { formatLessonTaskError } from './lesson-errors.ts';
 import { prepareDemoLesson } from './lesson-demo.ts';
+import { startLessonReview } from './lesson-review.ts';
 import {
   exportLessonVideo,
   prepareVideoExport,
@@ -34,6 +35,7 @@ const help = `一条命令：备课 → 编译 → 本地播放
 
   npm run demo                         无需密钥，播放自带课程
   npm run lesson -- "水循环" --generate
+  npm run lesson -- "水循环" --generate --review
   npm run lesson -- --brief examples/briefs/water-cycle.json --generate
   npm run lesson -- --draft path/to/lesson.draft.json --cached
   npm run lesson -- --play outputs/runs/<id>/<run>
@@ -43,6 +45,7 @@ const help = `一条命令：备课 → 编译 → 本地播放
 不带 --generate / --cached 时仅离线预检。
 --generate 明确允许文本模型及缺失语音缓存的付费请求。
 --cached 仅用于已有材料，不请求文本模型，不合成缺失语音。
+--review 在语音编译前打开材料审核页；直接修改可读课程内容，审核通过后继续编译。
 --audience 受众、--segments 1–20、--duration 15–1800、--id 标识（仅主题输入）。
 --repair-attempts 0–2：额外材料修复次数，默认 0。
 --json-mode false / --token-limit-field max_tokens：兼容文本模型端点。
@@ -70,6 +73,7 @@ export function parseLessonCommand(args: string[]) {
       demo: { type: 'boolean', default: false },
       generate: { type: 'boolean', default: false },
       cached: { type: 'boolean', default: false },
+      review: { type: 'boolean', default: false },
       audience: { type: 'string' },
       segments: { type: 'string' },
       duration: { type: 'string' },
@@ -155,6 +159,8 @@ export function parseLessonCommand(args: string[]) {
   if (values.generate && values.cached)
     throw new Error('生成和缓存模式不能同时使用。');
   if (values.cached && !values.draft) throw new Error('缓存模式需要已有材料。');
+  if (values.review && (!values.generate || (!topic && !values.brief)))
+    throw new Error('审核模式需要主题或需求文件，并显式指定 --generate。');
   if (
     (values.play || values.demo) &&
     (values.generate ||
@@ -262,6 +268,7 @@ export async function main(args = process.argv.slice(2)) {
   process.on('SIGINT', stop);
   process.on('SIGTERM', stop);
   let viewer: Awaited<ReturnType<typeof startLessonViewer>> | undefined;
+  let reviewer: Awaited<ReturnType<typeof startLessonReview>> | undefined;
   let demo: Awaited<ReturnType<typeof prepareDemoLesson>> | undefined;
   try {
     if (video) await prepareVideoExport(video, lifecycle.signal);
@@ -337,6 +344,29 @@ export async function main(args = process.argv.slice(2)) {
             fontUrl: '/lesson-assets/handwriting.ttf',
           }),
           signal: lifecycle.signal,
+          ...(values.review
+            ? {
+                async review(draft) {
+                  reviewer = await startLessonReview(draft, {
+                    port,
+                    signal: lifecycle.signal,
+                  });
+                  console.log(
+                    `请在浏览器审核课程材料：${reviewer.url}\n直接修改课程内容，点击“审核通过，开始编译”后才会请求语音。`,
+                  );
+                  if (!values['no-open'])
+                    await openLessonBrowser(reviewer.url).catch(() =>
+                      console.log('无法自动打开审核页，请打开上面的地址。'),
+                    );
+                  try {
+                    return await reviewer.result;
+                  } finally {
+                    await reviewer.close();
+                    reviewer = undefined;
+                  }
+                },
+              }
+            : {}),
           onStage(stage, path) {
             if (stage === 'prepare') console.log('1/4 检查本地音频工具…');
             if (stage === 'draft')
@@ -345,6 +375,8 @@ export async function main(args = process.argv.slice(2)) {
               );
             if (stage === 'compile')
               console.log('3/4 编译语音、板书、动画、字幕和手写资源…');
+            if (stage === 'review')
+              console.log('审核课程材料：原始材料已保存，等待人工修改并确认…');
           },
         },
       );
@@ -392,6 +424,7 @@ export async function main(args = process.argv.slice(2)) {
         }),
       );
   } finally {
+    await reviewer?.close();
     await viewer?.close();
     await demo?.close();
     process.off('SIGINT', stop);

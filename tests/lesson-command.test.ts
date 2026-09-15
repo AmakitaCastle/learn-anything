@@ -103,6 +103,9 @@ const fakeDependencies = (): LessonWorkflowDependencies => ({
 void test('one terminal entry supports topic, brief, manual, replay and offline defaults', () => {
   assert.ok(parseLessonCommand(['水循环']).checkOnly);
   assert.ok(!parseLessonCommand(['水循环', '--generate']).checkOnly);
+  assert.ok(
+    parseLessonCommand(['水循环', '--generate', '--review']).values.review,
+  );
   assert.equal(
     parseLessonCommand(['--topic', '水循环', '--generate']).topic,
     '水循环',
@@ -127,6 +130,9 @@ void test('one terminal entry supports topic, brief, manual, replay and offline 
     ['a', '--port', '-1'],
     ['a', '--repair-attempts', '3'],
     ['--draft', 'x', '--generate', '--repair-attempts', '1'],
+    ['--draft', 'x', '--generate', '--review'],
+    ['水循环', '--review'],
+    ['--play', 'x', '--review'],
     ['--brief', 'x', '--audience', 'y'],
   ])
     assert.throws(() => parseLessonCommand(args));
@@ -184,6 +190,69 @@ void test('LLM → compiler persists all artifacts without changing business mod
         await readFile(join(result.directory, 'generation.json'), 'utf8')
       ).includes(secret),
     );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+void test('reviewed narration reaches the compiler only after approval, with original and revised materials retained', async () => {
+  const directory = await mkdtemp(
+    join(tmpdir(), 'learn-anything-review-workflow-'),
+  );
+  try {
+    const stages: string[] = [];
+    let speechCalls = 0;
+    const dependencies = fakeDependencies();
+    const speech = dependencies.speech.synthesize.bind(dependencies.speech);
+    dependencies.speech.synthesize = async (segment) => {
+      speechCalls++;
+      return speech(segment);
+    };
+    dependencies.review = async (draft) => {
+      assert.equal(speechCalls, 0);
+      return {
+        ...draft,
+        title: '审核后的课程',
+        segments: draft.segments.map((segment, index) =>
+          index === 0
+            ? { ...segment, text: segment.text + '现在观察它。' }
+            : segment,
+        ),
+      };
+    };
+    dependencies.onStage = (stage) => stages.push(stage);
+    const result = await runLessonWorkflow(
+      { brief },
+      { outputRoot: directory },
+      dependencies,
+    );
+    assert.deepEqual(stages, [
+      'prepare',
+      'draft',
+      'review',
+      'compile',
+      'saved',
+    ]);
+    assert.ok(speechCalls > 0);
+    const original = JSON.parse(
+      await readFile(join(result.directory, 'lesson.draft.json'), 'utf8'),
+    );
+    const reviewed = JSON.parse(
+      await readFile(
+        join(result.directory, 'lesson.reviewed.draft.json'),
+        'utf8',
+      ),
+    );
+    const lesson = JSON.parse(
+      await readFile(join(result.directory, 'lesson.json'), 'utf8'),
+    );
+    const review = JSON.parse(
+      await readFile(join(result.directory, 'review.json'), 'utf8'),
+    );
+    assert.notEqual(original.segments[0].text, reviewed.segments[0].text);
+    assert.equal(lesson.title, '审核后的课程');
+    assert.equal(review.humanReview, 'approved');
+    assert.notEqual(review.originalSha256, review.reviewedSha256);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
