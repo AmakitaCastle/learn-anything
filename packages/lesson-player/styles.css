@@ -1569,3 +1569,48 @@
 .classroom-shell .grammar-plot text {
   fill: var(--classroom-ink, #000);
 }
+
+.classroom-shell .font-settings {
+  font:
+    13px/1.5 system-ui,
+    sans-serif;
+}
+.classroom-shell .font-settings summary {
+  cursor: pointer;
+  padding: 4px 8px;
+  width: fit-content;
+  margin: auto;
+}
+.classroom-shell .font-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+}
+.classroom-shell .font-options label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.classroom-shell .font-options [data-slot='native-select'] {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--classroom-border);
+  border-radius: 6px;
+  font:
+    12px system-ui,
+    sans-serif;
+  color: inherit;
+  background: var(--classroom-dock);
+}
+.classroom-shell .font-status {
+  display: block;
+  margin: 4px 0;
+  font:
+    12px/1.5 system-ui,
+    sans-serif;
+}
+.classroom-shell:has(.font-settings[open]) {
+  padding-bottom: 230px;
+}

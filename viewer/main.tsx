@@ -4,6 +4,11 @@ import { ClassroomPlayer } from '@learn-anything/lesson-player';
 import { parseLesson } from '@learn-anything/lesson-schema';
 import '@learn-anything/lesson-player/styles.css';
 import './styles.css';
+import {
+  DEFAULT_FONTS,
+  parseFontSelection,
+  type ChineseFontLoader,
+} from '@learn-anything/lesson-player/fonts';
 
 const root = createRoot(document.getElementById('root')!);
 async function load() {
@@ -27,14 +32,43 @@ async function load() {
   const registry = await loadLessonVisualRegistry(
     lesson.visuals.map((visual) => visual.grammar),
   );
-  if (new URLSearchParams(location.search).get('video') === '1') {
+  const params = new URLSearchParams(location.search);
+  const loadChineseFont: ChineseFontLoader = async (id) => {
+    const response = await fetch(`./fonts/${id}.json`);
+    if (!response.ok) throw new Error('字体载入失败。');
+    return response.json();
+  };
+  if (params.get('video') === '1') {
     const { mountVideo } = await import('./export');
     const theme = new URLSearchParams(location.search).get('theme') ?? 'light';
     if (theme !== 'light' && theme !== 'dark')
       throw new Error('视频配色无效。');
-    await mountVideo(root, lesson, registry, theme);
+    const fonts = parseFontSelection({
+      chinese: params.get('font-chinese') ?? DEFAULT_FONTS.chinese,
+      latin: params.get('font-latin') ?? DEFAULT_FONTS.latin,
+    });
+    await mountVideo(root, lesson, registry, theme, fonts, loadChineseFont);
   } else {
-    root.render(<ClassroomPlayer lesson={lesson} registry={registry} />);
+    const saved = await fetch('./font-preferences.json');
+    const initialFonts = saved.ok
+      ? parseFontSelection(await saved.json())
+      : { ...DEFAULT_FONTS };
+    root.render(
+      <ClassroomPlayer
+        lesson={lesson}
+        registry={registry}
+        initialFonts={initialFonts}
+        loadChineseFont={loadChineseFont}
+        onFontSelectionChange={async (fonts) => {
+          const response = await fetch('./font-preferences.json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(fonts),
+          });
+          if (!response.ok) throw new Error('无法保存字体偏好。');
+        }}
+      />,
+    );
   }
 }
 load().catch(() =>

@@ -15,3 +15,10 @@ Third-party components and assets retain their own licenses:
   Its upstream notices are distributed with the Tegaki dependency.
 
 Other npm dependencies retain their upstream licenses and notices.
+
+- Xiaolai font v3.126 and LXGW WenKai font v1.522: SIL Open Font License 1.1.
+  Sources and hashes: assets/fonts/README.md and assets/fonts/SHA256SUMS.
+  Licenses: assets/fonts/OFL-xiaolai.txt and assets/fonts/OFL-wenkai.txt.
+  Player subsets renamed to LearnAnything; copyright/license records retained.
+- Klee One and Parisienne fonts supplied by Tegaki: SIL Open Font License 1.1.
+  Redistributed notices: packages/lesson-player/fonts/choices/OFL-*.txt.

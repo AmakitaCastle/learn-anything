@@ -5,6 +5,12 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  readFontPreferences,
+  writeFontPreferences,
+} from './font-preferences.ts';
+import { builtinChineseFontPath, generateLessonFont } from './lesson-fonts.ts';
+import { parseFontSelection } from '@learn-anything/lesson-schema';
 import { lessonCapabilities } from '../capabilities/index.ts';
 import {
   validateBuiltinVisuals,
@@ -47,7 +53,7 @@ async function bundledFiles(
 // A closed file map, not a directory server. No project files or env are served.
 export async function startLessonViewer(
   directory: string,
-  options: { port?: number } = {},
+  options: { port?: number; preferencePath?: string } = {},
 ): Promise<{ url: string; close(): Promise<void> }> {
   const port = options.port ?? 0;
   if (!Number.isInteger(port) || port < 0 || port > 65535)
@@ -86,6 +92,12 @@ export async function startLessonViewer(
         }
       : {}),
   });
+  for (const id of ['xiaolai', 'wenkai'] as const)
+    courseFiles.set(`fonts/${id}.ttf`, {
+      bytes: await readFile(builtinChineseFontPath(id)),
+      type: mime.ttf,
+    });
+  const fontRequests = new Map<string, Promise<File>>();
   courseFiles.set('lesson.json', {
     bytes: Buffer.from(JSON.stringify(localLesson)),
     type: mime.json,
@@ -124,10 +136,6 @@ export async function startLessonViewer(
       response.setHeader('X-Content-Type-Options', 'nosniff');
       response.setHeader('Referrer-Policy', 'no-referrer');
       response.setHeader('Cache-Control', 'no-store');
-      if (!['GET', 'HEAD'].includes(request.method ?? '')) {
-        response.writeHead(405, { Allow: 'GET, HEAD' }).end();
-        return;
-      }
       const address = server.address();
       if (
         !address ||
@@ -140,6 +148,84 @@ export async function startLessonViewer(
       const pathname = request.url?.split('?')[0] ?? '';
       if (!pathname.startsWith(prefix)) {
         response.writeHead(404).end();
+        return;
+      }
+      const resource = pathname.slice(prefix.length);
+      const origin = `http://127.0.0.1:${address.port}`;
+      if (resource === 'font-preferences.json' && request.method === 'POST') {
+        if (request.headers.origin && request.headers.origin !== origin) {
+          response.writeHead(403).end();
+          return;
+        }
+        if (!request.headers['content-type']?.startsWith('application/json')) {
+          response.writeHead(415).end();
+          return;
+        }
+        const save = async () => {
+          let body = '';
+          for await (const chunk of request) {
+            body += chunk.toString();
+            if (Buffer.byteLength(body) > 1024) {
+              response.writeHead(413).end();
+              return;
+            }
+          }
+          let fonts;
+          try {
+            fonts = parseFontSelection(JSON.parse(body));
+          } catch {
+            response.writeHead(400).end();
+            return;
+          }
+          await writeFontPreferences(fonts, options.preferencePath);
+          response.writeHead(204).end();
+        };
+        void save().catch(() => {
+          if (!response.headersSent) response.writeHead(503).end();
+        });
+        return;
+      }
+      if (!['GET', 'HEAD'].includes(request.method ?? '')) {
+        response.writeHead(405, { Allow: 'GET, HEAD' }).end();
+        return;
+      }
+      if (resource === 'font-preferences.json') {
+        void readFontPreferences(options.preferencePath).then((fonts) => {
+          response.setHeader('Content-Type', mime.json);
+          response.end(
+            request.method === 'HEAD' ? undefined : JSON.stringify(fonts),
+          );
+        });
+        return;
+      }
+      const fontId =
+        resource === 'fonts/xiaolai.json'
+          ? 'xiaolai'
+          : resource === 'fonts/wenkai.json'
+            ? 'wenkai'
+            : null;
+      if (fontId) {
+        let pending = fontRequests.get(fontId);
+        if (!pending) {
+          pending = generateLessonFont(
+            lesson,
+            fontId,
+            prefix + `fonts/${fontId}.ttf`,
+          ).then(({ bundle }) => ({
+            bytes: Buffer.from(JSON.stringify(bundle)),
+            type: mime.json,
+          }));
+          fontRequests.set(fontId, pending);
+          void pending.catch(() => fontRequests.delete(fontId));
+        }
+        void pending
+          .then((file) => {
+            response.setHeader('Content-Type', file.type);
+            response.end(request.method === 'HEAD' ? undefined : file.bytes);
+          })
+          .catch(() => {
+            if (!response.headersSent) response.writeHead(503).end();
+          });
         return;
       }
       const file = files.get(

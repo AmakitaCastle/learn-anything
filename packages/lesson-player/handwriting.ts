@@ -19,7 +19,12 @@ export function isLatinHandwritingCharacter(
 
 export type HandwritingRun = {
   text: string;
-  script: 'chinese' | 'latin' | 'fallback';
+  script:
+    | 'chinese'
+    | 'latin'
+    | 'chinese-default'
+    | 'latin-default'
+    | 'fallback';
   start: number;
   offset: number;
   duration: number;
@@ -30,6 +35,7 @@ export function handwritingRuns(
   text: string,
   chinese: TegakiBundle,
   latin: TegakiBundle,
+  defaults?: { chinese: TegakiBundle; latin: TegakiBundle },
 ): { runs: HandwritingRun[]; duration: number } {
   const characters = Array.from(text);
   const groups: {
@@ -40,9 +46,15 @@ export function handwritingRuns(
   characters.forEach((character, index) => {
     const script = isLatinHandwritingCharacter(character, latin)
       ? 'latin'
-      : character in chinese.glyphData
-        ? 'chinese'
-        : 'fallback';
+      : /^[\u0020-\u007e]$/u.test(character) &&
+          defaults &&
+          isLatinHandwritingCharacter(character, defaults.latin)
+        ? 'latin-default'
+        : character in chinese.glyphData
+          ? 'chinese'
+          : defaults && character in defaults.chinese.glyphData
+            ? 'chinese-default'
+            : 'fallback';
     const previous = groups.at(-1);
     if (previous?.script === script) previous.text += character;
     else groups.push({ text: character, script, start: index });
@@ -51,7 +63,14 @@ export function handwritingRuns(
   // This composite is only for scheduling, never for rendering: each renderer
   // must use its matching font outlines and metrics. Chinese glyphs stay intact.
   const glyphData = {
+    ...defaults?.chinese.glyphData,
     ...chinese.glyphData,
+    ...Object.fromEntries(
+      Object.entries(defaults?.latin.glyphData ?? {}).filter(
+        ([character]) =>
+          defaults && isLatinHandwritingCharacter(character, defaults.latin),
+      ),
+    ),
     ...Object.fromEntries(
       Object.entries(latin.glyphData).filter(([character]) =>
         isLatinHandwritingCharacter(character, latin),
@@ -66,7 +85,13 @@ export function handwritingRuns(
   const runs = groups.map(({ text: runText, script, start }) => {
     const local = computeTimeline(
       runText,
-      script === 'latin' ? latin : chinese,
+      script === 'latin'
+        ? latin
+        : script === 'latin-default'
+          ? defaults!.latin
+          : script === 'chinese-default'
+            ? defaults!.chinese
+            : chinese,
       HANDWRITING_TIMING,
     );
     return {

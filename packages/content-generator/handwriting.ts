@@ -52,99 +52,114 @@ export function lessonHandwritingCharacters(draft: LessonDraft): string[] {
     ),
   ].sort();
 }
+export type HandwritingOptions = {
+  fontPath?: string;
+  cacheRoot?: string;
+  fontUrl?: string;
+};
 export function createTegakiHandwritingProvider(
-  options: { fontPath?: string; cacheRoot?: string; fontUrl?: string } = {},
+  options: HandwritingOptions = {},
 ): LessonHandwritingProvider {
   return {
-    async generate(draft) {
-      const font = await readFile(
-        options.fontPath ??
-          fileURLToPath(new URL('./fonts/ma-shan-zheng.ttf', import.meta.url)),
-      );
-      const fontHash = createHash('sha256')
-        .update(font)
-        .digest('hex')
-        .slice(0, 16);
-      const key = `${fontHash}-tegaki-0.22.1-round-400`;
-      const cache = join(
-        options.cacheRoot ?? join(tmpdir(), 'learn-anything-handwriting'),
-        key,
-      );
-      await mkdir(cache, { recursive: true });
-      const bytes = Uint8Array.from(font).buffer;
-      const parsed = await parseFont(bytes);
-      const bundle: HandwritingBundle = {
-        version: 0,
-        family: `lesson-handwriting-${fontHash}`,
-        fontUrl: options.fontUrl ?? `/fonts/handwriting-${fontHash}.ttf`,
-        lineCap: 'round',
-        unitsPerEm: parsed.unitsPerEm,
-        ascender: parsed.ascender,
-        descender: parsed.descender,
-        glyphData: {},
-      };
-      const missing: string[] = [];
-      const chars = lessonHandwritingCharacters(draft);
-      if (chars.length > 2000) throw new Error('课程手写字数超过限制。');
-      for (const char of chars) {
-        const path = join(cache, `${char.codePointAt(0)!.toString(16)}.json`);
-        let cached: string | undefined;
-        try {
-          cached = await readFile(path, 'utf8');
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-        }
-        if (cached !== undefined) {
-          const data = JSON.parse(cached);
-          if (data === null) {
-            missing.push(char);
-            continue;
-          }
-          const checked = parseHandwritingBundle({
-            ...bundle,
-            glyphData: { [char]: data },
-          });
-          bundle.glyphData[char] = checked.glyphData[char];
-          continue;
-        }
-        const result = processGlyph(parsed, char, {
-          ...DEFAULT_OPTIONS,
-          lineCap: 'round',
-        });
-        if (!result) {
-          missing.push(char);
-          await writeFile(path, 'null', { flag: 'wx' }).catch((error) => {
-            if (error.code !== 'EEXIST') throw error;
-          });
-          continue;
-        }
-        const last = result.strokesFontUnits.at(-1);
-        const glyph = {
-          w: result.advanceWidth,
-          t: last
-            ? Math.round((last.delay + last.animationDuration) * 1000) / 1000
-            : 0,
-          s: result.strokesFontUnits.map((stroke) => ({
-            p: stroke.points.map((p) => [p.x, p.y, p.width]),
-            d: stroke.delay,
-            a: stroke.animationDuration,
-            ...(stroke.priority && stroke.priority < 0
-              ? { r: stroke.priority }
-              : {}),
-          })),
-        };
-        const checked = parseHandwritingBundle({
-          ...bundle,
-          glyphData: { [char]: glyph },
-        });
-        bundle.glyphData[char] = checked.glyphData[char];
-        await writeFile(path, JSON.stringify(checked.glyphData[char]), {
-          flag: 'wx',
-        }).catch((error) => {
-          if (error.code !== 'EEXIST') throw error;
-        });
-      }
-      return { bundle: parseHandwritingBundle(bundle), font, missing };
-    },
+    generate: (draft) =>
+      generateHandwritingCharacters(
+        lessonHandwritingCharacters(draft),
+        options,
+      ),
   };
+}
+
+// Also supports re-styling saved LessonSpec content without touching speech,
+// anchors, course files or requesting a model.
+export async function generateHandwritingCharacters(
+  characters: string[],
+  options: HandwritingOptions = {},
+): Promise<HandwritingResources> {
+  const font = await readFile(
+    options.fontPath ??
+      fileURLToPath(new URL('./fonts/ma-shan-zheng.ttf', import.meta.url)),
+  );
+  const fontHash = createHash('sha256').update(font).digest('hex').slice(0, 16);
+  const key = `${fontHash}-tegaki-0.22.1-round-400`;
+  const cache = join(
+    options.cacheRoot ?? join(tmpdir(), 'learn-anything-handwriting'),
+    key,
+  );
+  await mkdir(cache, { recursive: true });
+  const bytes = Uint8Array.from(font).buffer;
+  const parsed = await parseFont(bytes);
+  const bundle: HandwritingBundle = {
+    version: 0,
+    family: `lesson-handwriting-${fontHash}`,
+    fontUrl: options.fontUrl ?? `/fonts/handwriting-${fontHash}.ttf`,
+    lineCap: 'round',
+    unitsPerEm: parsed.unitsPerEm,
+    ascender: parsed.ascender,
+    descender: parsed.descender,
+    glyphData: {},
+  };
+  const missing: string[] = [];
+  const chars = [...new Set(characters)].sort();
+  if (chars.some((char) => Array.from(char).length !== 1))
+    throw new Error('手写用字无效。');
+  if (chars.length > 2000) throw new Error('课程手写字数超过限制。');
+  for (const char of chars) {
+    const path = join(cache, `${char.codePointAt(0)!.toString(16)}.json`);
+    let cached: string | undefined;
+    try {
+      cached = await readFile(path, 'utf8');
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+    if (cached !== undefined) {
+      const data = JSON.parse(cached);
+      if (data === null) {
+        missing.push(char);
+        continue;
+      }
+      const checked = parseHandwritingBundle({
+        ...bundle,
+        glyphData: { [char]: data },
+      });
+      bundle.glyphData[char] = checked.glyphData[char];
+      continue;
+    }
+    const result = processGlyph(parsed, char, {
+      ...DEFAULT_OPTIONS,
+      lineCap: 'round',
+    });
+    if (!result) {
+      missing.push(char);
+      await writeFile(path, 'null', { flag: 'wx' }).catch((error) => {
+        if (error.code !== 'EEXIST') throw error;
+      });
+      continue;
+    }
+    const last = result.strokesFontUnits.at(-1);
+    const glyph = {
+      w: result.advanceWidth,
+      t: last
+        ? Math.round((last.delay + last.animationDuration) * 1000) / 1000
+        : 0,
+      s: result.strokesFontUnits.map((stroke) => ({
+        p: stroke.points.map((p) => [p.x, p.y, p.width]),
+        d: stroke.delay,
+        a: stroke.animationDuration,
+        ...(stroke.priority && stroke.priority < 0
+          ? { r: stroke.priority }
+          : {}),
+      })),
+    };
+    const checked = parseHandwritingBundle({
+      ...bundle,
+      glyphData: { [char]: glyph },
+    });
+    bundle.glyphData[char] = checked.glyphData[char];
+    await writeFile(path, JSON.stringify(checked.glyphData[char]), {
+      flag: 'wx',
+    }).catch((error) => {
+      if (error.code !== 'EEXIST') throw error;
+    });
+  }
+  return { bundle: parseHandwritingBundle(bundle), font, missing };
 }

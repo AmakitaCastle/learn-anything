@@ -1,6 +1,8 @@
 // Node-only project: no React, browser rendering or playback-clock dependency.
 export {
   createTegakiHandwritingProvider,
+  generateHandwritingCharacters,
+  type HandwritingOptions,
   lessonHandwritingCharacters,
   type LessonHandwritingProvider,
   type HandwritingResources,

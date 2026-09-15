@@ -6,7 +6,8 @@
   "files": [
     "dist",
     "styles.css",
-    "README.md"
+    "README.md",
+    "fonts/choices/OFL-*.txt"
   ],
   "exports": {
     ".": {
@@ -34,7 +35,12 @@
       "types": "./dist/board/index.d.ts",
       "import": "./dist/board.js"
     },
-    "./styles.css": "./styles.css"
+    "./styles.css": "./styles.css",
+    "./fonts": {
+      "learn-anything-source": "./font-presets.ts",
+      "types": "./dist/font-presets.d.ts",
+      "import": "./dist/fonts.js"
+    }
   },
   "scripts": {
     "build": "vite build --config vite.config.ts && tsc -p tsconfig.json --emitDeclarationOnly",

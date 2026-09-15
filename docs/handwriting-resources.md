@@ -38,3 +38,7 @@ const compiled = await compileLessonDraft(draft, {
 当前版本官方 generator 为私有源码包。固定源代码版本及 Node 适配说明位于 `packages/content-generator/vendor/README.md`，保留 MIT 许可证；字体保留 OFL。没有引入 React/播放器依赖到内容编译器。
 
 测试覆盖：真实官方管线生成新中文、缓存复用、非法资源拒绝、单字符回退保留其余笔画，以及浏览器中的中途书写、暂停不变和跳转恢复；不以最终静态截图代替书写动画验收。
+
+## 内置字体选择
+
+中文与英文／数字各支持三款字体，独立选择并保存。视频导出默认沿用 CLI 字体偏好，也可用 `--export-font-chinese`、`--export-font-latin` 单独覆盖，不修改原课程或语音时间轴。详见[字体选择](./font-selection.md)。
