@@ -25,6 +25,9 @@ npm run lesson -- "二分查找" --audience "刚开始学编程的人" --segment
 # 使用详细备课需求，自动生成、编译并打开播放器
 npm run lesson -- --brief examples/briefs/water-cycle.json --generate
 
+# 先审核可读课程材料，确认后再开始语音编译
+npm run lesson -- "水循环" --generate --review
+
 # 已有人工／模型材料：跳过文本模型，仅复用真实语音缓存
 npm run lesson -- --draft packages/content-generator/examples/water-cycle.draft.json --cached
 
@@ -56,6 +59,7 @@ npm --prefix /Users/castleamakit/Documents/code/ai/learn-anything run lesson -- 
 | `--topic`                                            | 与位置参数等效，只能使用一种主题写法                                                                                  |
 | `--audience / --segments / --duration / --id`        | 仅主题输入可用；默认零基础普通学习者、6 段、目标 90 秒、主题内容哈希 ID。时长不是实测音频时长                         |
 | `--repair-attempts 1`                                | 最多一次额外材料重写请求；默认 0，最多 2，只适用于文本模型生成                                                        |
+| `--review`                                           | 模型备课后打开本地审核页，编辑标题、旁白、板书和图示内容；审核通过后再请求语音并编译。与 `--generate` 一同使用        |
 | `--json-mode false / --token-limit-field max_tokens` | 文本模型兼容端点选项；不会放宽材料校验                                                                                |
 | `--max-output-tokens <正整数>`                       | 可选文本输出预算。兼容协议与 Gemini 默认不发送上限，使用服务端默认值；Anthropic 因接口必填默认 8192。模型本身仍有上限 |
 | `--output <新目录>`                                  | 指定本次产物目录；已存在目录会在模型请求前被拒绝，不覆盖或追加                                                        |
@@ -79,6 +83,8 @@ npm --prefix /Users/castleamakit/Documents/code/ai/learn-anything run lesson -- 
 ```text
 lesson.draft.json   已校验课程材料
 generation.json    来源、模型、请求次数、待人工复核标记
+lesson.reviewed.draft.json  审核后重新校验的材料（使用 --review 时）
+review.json         审核记录与原稿／修订稿的内容摘要（使用 --review 时）
 narration.mp3      实测拼接语音
 captions.vtt       字幕
 alignment.json    实测时长、锚点、低置信度词和手写报告
@@ -91,6 +97,8 @@ lesson.json       最后保存的完整播放协议
 ```bash
 npm run lesson -- --draft <本次目录>/lesson.draft.json --generate
 ```
+
+使用审核模式时，把恢复命令的材料路径换成同目录的 `lesson.reviewed.draft.json`，以保留你的修改。审核页可直接取消；确认审核前不会请求语音，也不会产生可播放课程。
 
 恢复编译创建新的运行目录并复用已合成片段的语音缓存。`lesson.json` 最后保存；未保存它的半成品不会被当成可播放课程。播放器启动失败不会删除课程，可修复依赖或端口后用 `--play <目录>` 重新打开。
 
