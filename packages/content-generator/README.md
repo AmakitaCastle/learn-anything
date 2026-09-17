@@ -11,10 +11,10 @@
 - `LessonDraft/LessonAnchor/DraftEvent`、`parseLessonDraft()`：共享的材料类型和运行时预检。
 - `compileLessonDraft(draft, {speech,audio?,resources?,pauseBetweenSegments?})`：完整编译，返回 `audio`、`lesson`、`lessonJson`、`captionsVtt`、`resources` 和实测对齐 `report`。
 - `compileAlignedLessonDraft()`：已有真实词时间戳和实测片段时长时的确定性编译，不请求语音。
-- `createDoubaoSpeechProvider()`：缓存适配器；默认只读缓存，明确 `allowSynthesis: true` 才允许缺失时合成。
+- `createDoubaoCompatibleSpeechProvider()` / `createDoubaoSpeechProvider()`：豆包 V3 HTTP/SSE 及兼容服务的缓存适配器；默认只读缓存，明确 `allowSynthesis: true` 才允许缺失时合成。
 - `createFfmpegAudioProcessor()`：可替换的默认音频适配器；实际执行需要 FFmpeg／FFprobe，在语音请求前检查可用性。
 - `createLessonArtifacts(compiledLesson)`：按共享协议校验，返回 `lesson`、`lessonJson`、`captionsVtt` 和 `resources`。
-- `readDoubaoConfig/synthesizeDoubao/speechCacheKey`：Node-only 语音 Provider。
+- `readDoubaoCompatibleConfig/synthesizeDoubaoCompatible/speechCacheKey`：Node-only 豆包兼容语音 Provider；原 `readDoubaoConfig/synthesizeDoubao` 名称继续兼容。
 - `cachedSpeech/saveSpeech`：本地内容缓存。
 - `alignedSegment/spokenText`：真实词时间戳与语义锚点。
 - `DraftGenerator<Input, Draft>`：保留兼容的预留类型；新材料生成使用上游 `LessonDraftProvider/generateLessonDraft()`，不表示本包必须调用 LLM 写稿。
@@ -41,4 +41,4 @@ npm run typecheck -w @learn-anything/content-generator
 
 `./examples/water-cycle` 导出人工材料 `waterCycleDraft`；`./examples/water-cycle.draft.json` 可直接交给上游或通用编译器。旧 `compileWaterCycle()` 仅兼容历史调用；`./legacy-lesson` 和旧课对齐子入口用于归档迁移。输出只能包含数据，不输出可执行动画代码。
 
-目前是 private workspace，未发布到 npm。更多见[模块架构](../../docs/module-architecture.md)和[豆包接入](../../docs/tts-doubao.md)。禁止在前端导入本包或打包 API Key。
+目前是 private workspace，未发布到 npm。更多见[模块架构](../../docs/module-architecture.md)和[豆包兼容语音接入](../../docs/tts-doubao.md)。禁止在前端导入本包或打包 API Key。

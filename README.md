@@ -50,12 +50,13 @@ cp -n .env.example .env.local
 
 在 `.env.local` 中填写：
 
-| 配置                                                                  | 用途                                             |
-| --------------------------------------------------------------------- | ------------------------------------------------ |
-| `LESSON_LLM_PROVIDER / LESSON_LLM_MODEL / LESSON_LLM_API_KEY`         | 文本模型生成课程材料                             |
-| `LESSON_LLM_BASE_URL`                                                 | 可选兼容接口根地址，包含版本路径，不包含动作路径 |
-| `DOUBAO_SPEECH_API_KEY / DOUBAO_TTS_RESOURCE_ID / DOUBAO_TTS_SPEAKER` | 语音合成，需要与账号权限和音色版本匹配           |
-| `DOUBAO_TTS_SPEECH_RATE`                                              | 合成语速，默认 0                                 |
+| 配置                                                          | 用途                                                |
+| ------------------------------------------------------------- | --------------------------------------------------- |
+| `LESSON_LLM_PROVIDER / LESSON_LLM_MODEL / LESSON_LLM_API_KEY` | 文本模型生成课程材料                                |
+| `LESSON_LLM_BASE_URL`                                         | 可选兼容接口根地址，包含版本路径，不包含动作路径    |
+| `DOUBAO_TTS_ENDPOINT`                                         | 可选豆包 V3 HTTP/SSE 兼容接口；留空使用豆包官方地址 |
+| `DOUBAO_SPEECH_API_KEY / DOUBAO_TTS_RESOURCE_ID`              | 官方接口必填；自部署兼容接口可按服务要求填写或留空  |
+| `DOUBAO_TTS_SPEAKER / DOUBAO_TTS_SPEECH_RATE`                 | 音色 ID 与合成语速；语速默认 0                      |
 
 配置好后：
 
@@ -67,7 +68,7 @@ npm run lesson -- "二分查找为什么能排除一半" --generate
 
 如需先人工审稿，加 `--review`：模型生成后会在本地浏览器显示可读的旁白、板书和图示安排，你可直接修改课程材料；点击“审核通过，开始编译”后才会请求语音。原稿与审核后的材料分别保存，修改后会再次校验。详见[终端使用指南](./docs/terminal-lesson.md)。
 
-支持 OpenAI 兼容、Anthropic、Gemini 三种协议及自定义适配器；协议支持不代表所有厂商和模型已实测。配置详情见[文本模型](./docs/lesson-draft-generator.md)和[豆包语音](./docs/tts-doubao.md)。
+文本模型支持 OpenAI 兼容、Anthropic、Gemini 三种协议及自定义适配器；语音支持豆包官方服务及兼容豆包 V3 HTTP/SSE 协议的自部署／第三方服务。协议支持不代表所有厂商和模型已实测。配置详情见[文本模型](./docs/lesson-draft-generator.md)和[豆包兼容语音](./docs/tts-doubao.md)。
 
 ## 保存、重播和失败恢复
 

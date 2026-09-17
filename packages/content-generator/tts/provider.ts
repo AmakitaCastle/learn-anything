@@ -35,6 +35,7 @@ export function createDoubaoSpeechProvider(options: {
         );
         path = await saveSpeech(options.cacheRoot, key, result.audio, {
           schemaVersion: 1,
+          provider: config.endpoint ? 'doubao-compatible' : 'doubao',
           mode: 'lesson-draft-segment',
           text: segment.text,
           speaker: config.speaker,
@@ -60,3 +61,5 @@ export function createDoubaoSpeechProvider(options: {
     },
   };
 }
+
+export const createDoubaoCompatibleSpeechProvider = createDoubaoSpeechProvider;

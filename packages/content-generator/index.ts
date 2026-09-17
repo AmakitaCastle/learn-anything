@@ -27,7 +27,10 @@ export {
   createFfmpegAudioProcessor,
   type LessonAudioProcessor,
 } from './audio.ts';
-export { createDoubaoSpeechProvider } from './tts/provider.ts';
+export {
+  createDoubaoCompatibleSpeechProvider,
+  createDoubaoSpeechProvider,
+} from './tts/provider.ts';
 export {
   createLessonArtifacts,
   type LessonArtifacts,
@@ -40,9 +43,12 @@ export {
 } from './tts/segment-alignment.ts';
 export { cachedSpeech, saveSpeech } from './tts/cache.ts';
 export {
+  readDoubaoCompatibleConfig,
   readDoubaoConfig,
   speechCacheKey,
+  synthesizeDoubaoCompatible,
   synthesizeDoubao,
+  type DoubaoCompatibleConfig,
   type DoubaoConfig,
   type SpeechResult,
 } from './tts/doubao.ts';
