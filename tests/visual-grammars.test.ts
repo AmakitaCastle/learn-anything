@@ -33,6 +33,9 @@ void test('real built-in grammars validate, reduce, render and replay independen
     const grammars = await server.ssrLoadModule(
       '/packages/visual-grammars/index.ts',
     );
+    const graphRenderer = await server.ssrLoadModule(
+      '/packages/lesson-player/grammars/graph.tsx',
+    );
     const registry = grammars.defaultVisualRegistry as VisualRegistry;
     const graph = {
       nodes: [
@@ -41,6 +44,20 @@ void test('real built-in grammars validate, reduce, render and replay independen
       ],
       edges: [{ id: 'send', from: 'input', to: 'output' }],
     };
+    assert.equal(
+      graphRenderer.graphNeedsCompactNodes(graphRenderer.parseGraph(graph, 10)),
+      false,
+    );
+    assert.equal(
+      graphRenderer.graphNeedsCompactNodes({
+        nodes: [
+          { id: 'a', label: 'A', position: { x: 12, y: 50 }, at: 0 },
+          { id: 'b', label: 'B', position: { x: 32, y: 50 }, at: 0 },
+        ],
+        edges: [{ id: 'ab', from: 'a', to: 'b' }],
+      }),
+      true,
+    );
     const cases = [
       {
         grammar: 'flow',

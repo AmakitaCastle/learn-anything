@@ -928,9 +928,15 @@
   white-space: pre;
 }
 .classroom-shell .grammar-graph {
+  --graph-node-width: 130px;
+  --graph-node-half: 65px;
   position: relative;
   height: 360px;
   margin-top: 70px;
+}
+.classroom-shell .grammar-graph[data-node-layout='compact'] {
+  --graph-node-width: 108px;
+  --graph-node-half: 54px;
 }
 .classroom-shell .grammar-graph > svg {
   position: absolute;
@@ -955,13 +961,16 @@
   transform: translate3d(-50%, -50%, 0);
   will-change: transform, opacity;
   backface-visibility: hidden;
-  width: 130px;
+  width: var(--graph-node-width);
   padding: 12px 10px;
   border: 2px solid var(--classroom-rule, #4f4b52);
   border-radius: 7px 5px 8px 6px;
   background: var(--classroom-surface, #fff);
   font-size: 16px;
   text-align: center;
+}
+.classroom-shell .grammar-graph[data-node-layout='compact'] .grammar-node {
+  font-size: 14px;
 }
 .classroom-shell .grammar-node.is-visited {
   border-color: var(--classroom-success, #087866);

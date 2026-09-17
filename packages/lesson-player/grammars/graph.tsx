@@ -13,13 +13,31 @@ export {
 import { clamp01, HandwrittenLine } from '../board/index.tsx';
 import type { VisualProps } from '../runtime.ts';
 
+const compactHorizontalGap = 23;
+const sameRowGap = 18;
+
+export function graphNeedsCompactNodes(config: GraphConfig): boolean {
+  return config.nodes.some((node, index) =>
+    config.nodes.slice(index + 1).some(
+      (other) =>
+        Math.abs(node.position.y - other.position.y) < sameRowGap &&
+        Math.abs(node.position.x - other.position.x) < compactHorizontalGap,
+    ),
+  );
+}
+
 export function GraphRenderer({
   config,
   state,
   time,
 }: VisualProps<GraphConfig, GraphState>) {
+  const compact = graphNeedsCompactNodes(config);
   return (
-    <div className="grammar-graph" aria-label="流程与状态图">
+    <div
+      className="grammar-graph"
+      data-node-layout={compact ? 'compact' : 'regular'}
+      aria-label="流程与状态图"
+    >
       <svg
         viewBox="0 0 640 360"
         preserveAspectRatio="none"
@@ -71,7 +89,7 @@ export function GraphRenderer({
           data-active={state.active === node.id}
           className={`grammar-node${state.active === node.id ? ' is-active' : ''}${state.visited.includes(node.id) ? ' is-visited' : ''}`}
           style={{
-            left: `${node.position.x}%`,
+            left: `clamp(var(--graph-node-half), ${node.position.x}%, calc(100% - var(--graph-node-half)))`,
             top: `${node.position.y}%`,
             opacity: clamp01((time - node.at) / 0.5),
           }}
