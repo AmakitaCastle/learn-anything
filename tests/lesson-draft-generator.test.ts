@@ -204,6 +204,49 @@ void test('manual input and fenced LLM output share the versioned schema', () =>
   );
 });
 
+void test('generated whole-sentence, cross-sentence and overlapping emphasis is omitted without another model request', async () => {
+  const input = structuredClone(rawDraft);
+  input.segments[1].emphasis = [
+    { phrase: '加热继续，温度到六十度' },
+    { phrase: '六十度。曲线正在上升' },
+    { phrase: '温度到六十度' },
+    { phrase: '六十度' },
+    { phrase: '曲线' },
+  ];
+  let calls = 0;
+  const provider = {
+    ...model(),
+    async generate() {
+      calls++;
+      return { text: JSON.stringify(input) };
+    },
+  };
+  assert.throws(() => importLessonDraft(input), LessonDraftGenerationError);
+  const result = await generateLessonDraft(brief, { provider });
+  assert.equal(calls, 1);
+  assert.equal(result.report.removedEmphasis, 3);
+  assert.deepEqual(result.draft.segments[1].emphasis, [
+    { phrase: '温度到六十度' },
+    { phrase: '曲线' },
+  ]);
+  assert.equal(result.draft.segments[1].text, input.segments[1].text);
+  assert.deepEqual(parseLessonDraftOutput(result.draftJson), result.draft);
+});
+
+void test('generated emphasis with unknown phrases or forbidden fields is still rejected', async () => {
+  for (const mark of [
+    { phrase: '旁白没有的短语' },
+    { phrase: '加热继续，温度到六十度', extra: true },
+  ]) {
+    const input = structuredClone(rawDraft);
+    input.segments[1].emphasis = [mark];
+    await assert.rejects(
+      generateLessonDraft(brief, { provider: model(JSON.stringify(input)) }),
+      { code: 'invalid-output', attempts: 1 },
+    );
+  }
+});
+
 void test('brief defaults and prompt describe all four grammars without depending on the compiler', () => {
   const prompt = buildLessonDraftPrompt({
     id: 'sample',

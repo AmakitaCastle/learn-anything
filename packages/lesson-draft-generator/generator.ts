@@ -1,5 +1,8 @@
 import {
   parseLessonDraft,
+  phraseRange,
+  sentenceRanges,
+  spokenText,
   type LessonDraft,
   type CapabilityRegistry,
 } from '@learn-anything/lesson-schema';
@@ -13,10 +16,7 @@ import {
   type LessonDraftProvider,
 } from './types.ts';
 
-export function parseLessonDraftOutput(
-  value: unknown,
-  capabilities?: CapabilityRegistry,
-): LessonDraft {
+function decodeLessonDraftOutput(value: unknown): unknown {
   if (typeof value === 'string') {
     if (value.length > 1_000_000) throw new Error('模型材料过长。');
     const source = value.trim();
@@ -27,7 +27,128 @@ export function parseLessonDraftOutput(
       throw new Error('材料必须是单个完整 JSON 对象。');
     }
   }
-  return parseLessonDraft(value, capabilities);
+  return value;
+}
+
+export function parseLessonDraftOutput(
+  value: unknown,
+  capabilities?: CapabilityRegistry,
+): LessonDraft {
+  return parseLessonDraft(decodeLessonDraftOutput(value), capabilities);
+}
+
+// Emphasis is optional decoration. Drop only marks whose text range is known
+// to be a whole sentence, cross a sentence, or overlap another kept mark.
+// All other material still goes through the unchanged schema validator.
+function removeInvalidGeneratedEmphasis(value: unknown): number {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return 0;
+  const segments = (value as Record<string, unknown>).segments;
+  if (!Array.isArray(segments)) return 0;
+  let removed = 0;
+  for (const segment of segments) {
+    if (!segment || typeof segment !== 'object' || Array.isArray(segment))
+      continue;
+    const item = segment as Record<string, unknown>;
+    if (
+      typeof item.text !== 'string' ||
+      !Array.isArray(item.emphasis) ||
+      item.emphasis.length > 8
+    )
+      continue;
+    const chars = Array.from(item.text);
+    const indices = chars.flatMap((char, index) =>
+      spokenText(char) ? [index] : [],
+    );
+    const sentences = sentenceRanges(item.text);
+    const kept: unknown[] = [];
+    const ranges: { start: number; end: number }[] = [];
+    for (const mark of item.emphasis) {
+      if (!mark || typeof mark !== 'object' || Array.isArray(mark)) {
+        kept.push(mark);
+        continue;
+      }
+      const emphasis = mark as Record<string, unknown>;
+      if (
+        Object.keys(emphasis).some(
+          (key) => !['phrase', 'occurrence'].includes(key),
+        ) ||
+        typeof emphasis.phrase !== 'string' ||
+        emphasis.phrase.length > 40 ||
+        (emphasis.occurrence !== undefined &&
+          (!Number.isInteger(emphasis.occurrence) ||
+            (emphasis.occurrence as number) < 1 ||
+            (emphasis.occurrence as number) > 2000))
+      ) {
+        kept.push(mark);
+        continue;
+      }
+      let range: { start: number; end: number };
+      try {
+        const spoken = phraseRange(
+          item.text,
+          emphasis.phrase,
+          emphasis.occurrence as number | undefined,
+        );
+        range = {
+          start: indices[spoken.start],
+          end: indices[spoken.end - 1] + 1,
+        };
+      } catch {
+        kept.push(mark);
+        continue;
+      }
+      const sentence = sentences.find(
+        (sentence) =>
+          sentence.start <= range.start && sentence.end >= range.end,
+      );
+      const invalid =
+        !sentence ||
+        spokenText(chars.slice(sentence.start, sentence.end).join('')) ===
+          spokenText(emphasis.phrase) ||
+        ranges.some(
+          (keptRange) =>
+            range.start < keptRange.end && range.end > keptRange.start,
+        );
+      if (invalid) {
+        removed++;
+      } else {
+        kept.push(mark);
+        ranges.push(range);
+      }
+    }
+    if (kept.length) item.emphasis = kept;
+    else delete item.emphasis;
+  }
+  return removed;
+}
+
+function parseGeneratedOutput(
+  value: string,
+  capabilities?: CapabilityRegistry,
+): { draft: LessonDraft; removedEmphasis: number } {
+  const decoded = decodeLessonDraftOutput(value);
+  try {
+    return {
+      draft: parseLessonDraft(decoded, capabilities),
+      removedEmphasis: 0,
+    };
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      ![
+        '重点只能选择局部文字。',
+        '重点文字范围无效。',
+        '重点不能覆盖整句或跨句。',
+      ].includes(error.message)
+    )
+      throw error;
+    const removedEmphasis = removeInvalidGeneratedEmphasis(decoded);
+    if (!removedEmphasis) throw error;
+    return {
+      draft: parseLessonDraft(decoded, capabilities),
+      removedEmphasis,
+    };
+  }
 }
 
 function artifacts(
@@ -129,10 +250,14 @@ export async function generateLessonDraft(
         usage[key] = (usage[key] ?? 0) + count;
     }
     let draft: LessonDraft;
+    let removedEmphasis = 0;
     try {
       if (typeof response.text !== 'string')
         throw new Error('模型返回非文本材料。');
-      draft = parseLessonDraftOutput(response.text, options.capabilities);
+      ({ draft, removedEmphasis } = parseGeneratedOutput(
+        response.text,
+        options.capabilities,
+      ));
       if (draft.id !== prompt.brief.id)
         throw new Error('材料 id 必须等于 brief.id。');
       if (draft.segments.length !== prompt.brief.segmentCount)
@@ -187,6 +312,7 @@ export async function generateLessonDraft(
       provider: providerId,
       model,
       ...(Object.keys(usage).length ? { usage } : {}),
+      ...(removedEmphasis ? { removedEmphasis } : {}),
       humanReview: 'pending',
     });
   }

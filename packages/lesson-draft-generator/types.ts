@@ -42,6 +42,7 @@ export type DraftGenerationResult = {
     provider?: string;
     model?: string;
     usage?: { inputTokens?: number; outputTokens?: number };
+    removedEmphasis?: number;
     humanReview: 'pending';
   };
 };

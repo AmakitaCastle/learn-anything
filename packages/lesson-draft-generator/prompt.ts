@@ -8,7 +8,7 @@ import {
 } from '@learn-anything/lesson-schema';
 import { type LessonBrief } from './types.ts';
 
-export const DRAFT_PROMPT_VERSION = '0.4.0';
+export const DRAFT_PROMPT_VERSION = '0.4.1';
 export function parseLessonBrief(
   value: unknown,
   capabilities: CapabilityRegistry = builtinCapabilities,
@@ -68,7 +68,7 @@ const contract = `你是结构化课程材料设计者。只输出一个 LessonD
 所有标识只能含 ASCII 字母、数字、下划线、横线；片段、动画、节点、边、板书各自标识唯一。文本非空、无 HTML、无首尾空白。
 segments 严格按讲解顺序，数量等于 brief.segmentCount；每项 {id,label,text,visualId?,emphasis?}，text 为可直接朗读的完整旁白，最多 2000 字符。教学顺序：问题或直觉→关键概念→具体例子→结论；贴合受众和学习目标。text 全文会自动成为板书，按句拆分、随语音逐字书写并保留，不要另写一份删减版。
 visualId 把本段完整旁白关联到一张图。每张 visuals 中的图必须至少关联一个讲解段；多个段可引用同一图，回到旧图讲解时仍引用旧图 ID。图表数量不得超过片段数。一段只围绕它关联的图展开，不在同段操作另一张图；纯文字讲解可省略 visualId。
-emphasis 是可选的 [{phrase,occurrence?}]，每段最多 8 项，phrase 最多 40 字符，必须来自本段旁白，重复短语需 occurrence。只选择关键术语、公式、对比或因果关系，不能选整句，不能逐句全选，不能选交叉或重叠范围。允许普通解释句没有重点。重点在对应短语讲完后自动圈画，不提供坐标。
+emphasis 是可选的 [{phrase,occurrence?}]，每段最多 8 项，phrase 最多 40 字符，必须来自本段旁白，重复短语需 occurrence。只选择关键术语、公式、对比或因果关系，不能选整句，不能跨越句号、问号、叹号或换行，不能逐句全选，不能选交叉或重叠范围。允许普通解释句没有重点，找不到合适的局部短语时省略 emphasis。重点在对应短语讲完后自动圈画，不提供坐标。
 eyebrow 是文本，可含 {duration}，禁止猜测最终语音秒数。targetDurationSeconds 仅指导文稿篇幅，不是实测时长。
 presentation 至少 {diagramTitle,notesTitle}；可选 titleAt/metaAt/diagramTitleAt/notesTitleAt/ruleAt 的值是锚点。
 锚点 {segment,phrase?,edge?,occurrence?,offset?}：segment 引用片段；phrase 必须逐字来自该旁白，忽略标点空白后也须匹配；重复短语指定 occurrence（从 1 开始）；edge 是 start（默认）或 end；优先使用无 offset 的锚点。省略 phrase 绑定片段边界。
