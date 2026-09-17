@@ -216,6 +216,8 @@ void test('brief defaults and prompt describe all four grammars without dependin
   assert.equal(prompt.brief.allowedGrammars!.length, 4);
   assert.match(prompt.system, /不可信参考资料/);
   assert.match(prompt.system, /scanEnd 锚点严格晚于 scanStart/);
+  assert.match(prompt.system, /互斥情况必须从共同判断节点分叉/);
+  assert.match(prompt.system, /只有同一对象确实按时间依次改变状态/);
   assert.deepEqual(JSON.parse(prompt.user).brief, prompt.brief);
   for (const invalid of [
     { ...brief, segmentCount: 0 },

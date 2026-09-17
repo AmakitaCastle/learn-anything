@@ -78,7 +78,7 @@ export const builtinCapabilities = createCapabilityRegistry([
     version: '1.0.0',
     draft: {
       instructions:
-        'flow：流程与因果链。config {nodes:[{id,label,position?:{x,y},at?:{$time:锚点}}],edges:[{id,from,to}]}。节点最多30，坐标0–100。activate {id:节点ID}；connect {id:边ID}。节点和连线按讲解逐步出现。',
+        'flow：流程、因果链与条件分支。config {nodes:[{id,label,position?:{x,y},at?:{$time:锚点}}],edges:[{id,from,to}]}。节点最多30，坐标0–100。activate {id:节点ID}；connect {id:边ID}。节点和连线按讲解逐步出现。if/else、命中/未命中、存在/不存在等互斥情况必须从共同判断节点分叉，不能把两条分支首尾串联。',
       timeFields: graphTimes,
     },
   }),
@@ -87,7 +87,7 @@ export const builtinCapabilities = createCapabilityRegistry([
     version: '1.0.0',
     draft: {
       instructions:
-        'state-transition：状态及切换。config {nodes:[{id,label,position?:{x,y},at?:{$time:锚点}}],edges:[{id,from,to}]}。enter {id:节点ID}；transition {id:边ID}。先enter，再沿当前状态的出边转换。',
+        'state-transition：同一对象随时间依次发生的状态及切换。config {nodes:[{id,label,position?:{x,y},at?:{$time:锚点}}],edges:[{id,from,to}]}。enter {id:节点ID}；transition {id:边ID}。先enter，再沿当前状态的出边转换。不要用于 if/else、命中/未命中、存在/不存在等互斥分支或普通操作步骤；这些情况使用 flow。',
       timeFields: graphTimes,
       validate(_config, events) {
         if (

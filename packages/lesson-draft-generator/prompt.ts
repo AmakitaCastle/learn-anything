@@ -73,7 +73,7 @@ eyebrow 是文本，可含 {duration}，禁止猜测最终语音秒数。targetD
 presentation 至少 {diagramTitle,notesTitle}；可选 titleAt/metaAt/diagramTitleAt/notesTitleAt/ruleAt 的值是锚点。
 锚点 {segment,phrase?,edge?,occurrence?,offset?}：segment 引用片段；phrase 必须逐字来自该旁白，忽略标点空白后也须匹配；重复短语指定 occurrence（从 1 开始）；edge 是 start（默认）或 end；优先使用无 offset 的锚点。省略 phrase 绑定片段边界。
 visuals 每项 {id,grammar,config}。只用 brief.allowedGrammars 内的语法，数量按学习目标、概念关系和推导阶段决定，不以一个图为默认上限，最多 20 个。简单概念可用一个图；复杂概念、有多个机制或需要比较时，通常拆成 2–4 个互补图，例如整体关系→局部机制→具体例子→对比或边界，不为凑数重复同一信息。无适合语法可用 [] 配合分步板书，不编造新语法。坐标 position 在 0–100 内。
-按解释任务选择适合的已注册能力；同一能力可有多个实例。每张图与完整板书组成区块，讲到时展开，历史区块保留。涉及人物处境、对话、观点冲突或概念归属时，优先选择能够呈现情境与关系变化的能力，不把所有内容强行转成流程图。模型只输出课程数据，能力包负责绘制。
+按解释任务选择适合的已注册能力；同一能力可有多个实例。条件分支必须呈现共同判断节点和分叉关系，不能把互斥情况首尾串成先后步骤；只有同一对象确实按时间依次改变状态时才使用 state-transition。每张图与完整板书组成区块，讲到时展开，历史区块保留。涉及人物处境、对话、观点冲突或概念归属时，优先选择能够呈现情境与关系变化的能力，不把所有内容强行转成流程图。模型只输出课程数据，能力包负责绘制。
 配置中的时间字段必须使用 {$time:锚点}；允许路径由下方能力说明声明，不预填秒数，不在其他位置放$time。
 events 按旁白语义发生顺序安排，每项有 type 和 when:锚点，禁止 at、chapter 事件、脚本或 React 组件。
 board.write: {type:"board.write",when,item:{id,text,tone?,kind?,underline?,position?}}；tone 是 plain/muted/accent/strong/danger/success/label，kind 是 text/formula。
