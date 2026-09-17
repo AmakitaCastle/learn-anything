@@ -13,7 +13,14 @@ export type DoubaoConfig = {
   speaker: string;
   speechRate: number;
   subtitles?: boolean;
+  /**
+   * A third-party endpoint that implements the Doubao V3 HTTP/SSE protocol.
+   * Omit it to use the official Doubao service.
+   */
+  endpoint?: string;
 };
+
+export type DoubaoCompatibleConfig = DoubaoConfig;
 
 export type SpeechResult = {
   audio: Buffer;
@@ -32,16 +39,60 @@ export function readDoubaoConfig(
     }
     return value;
   };
+  const optional = (name: string) => {
+    const value = env[name]?.trim() ?? '';
+    if (/[\r\n]/.test(value)) {
+      throw new Error(`请在 .env.local 中填写有效的 ${name}。`);
+    }
+    return value;
+  };
+  const endpoint = parseDoubaoEndpoint(env.DOUBAO_TTS_ENDPOINT);
+  const customEndpoint = endpoint !== DOUBAO_TTS_ENDPOINT;
   const speechRate = Number(env.DOUBAO_TTS_SPEECH_RATE ?? '0');
   if (!Number.isInteger(speechRate) || speechRate < -50 || speechRate > 100) {
     throw new Error('DOUBAO_TTS_SPEECH_RATE 必须是 -50 到 100 的整数。');
   }
   return {
-    apiKey: required('DOUBAO_SPEECH_API_KEY'),
-    resourceId: required('DOUBAO_TTS_RESOURCE_ID'),
+    apiKey: customEndpoint
+      ? optional('DOUBAO_SPEECH_API_KEY')
+      : required('DOUBAO_SPEECH_API_KEY'),
+    resourceId: customEndpoint
+      ? optional('DOUBAO_TTS_RESOURCE_ID')
+      : required('DOUBAO_TTS_RESOURCE_ID'),
     speaker: required('DOUBAO_TTS_SPEAKER'),
     speechRate,
+    ...(customEndpoint ? { endpoint } : {}),
   };
+}
+
+export const readDoubaoCompatibleConfig = readDoubaoConfig;
+
+function parseDoubaoEndpoint(value: string | undefined): string {
+  const input = value?.trim() || DOUBAO_TTS_ENDPOINT;
+  if (/[\r\n]/.test(input)) {
+    throw new Error('DOUBAO_TTS_ENDPOINT 必须是有效的 HTTP(S) 地址。');
+  }
+  let endpoint: URL;
+  try {
+    endpoint = new URL(input);
+  } catch {
+    throw new Error('DOUBAO_TTS_ENDPOINT 必须是有效的 HTTP(S) 地址。');
+  }
+  if (
+    (endpoint.protocol !== 'http:' && endpoint.protocol !== 'https:') ||
+    endpoint.username ||
+    endpoint.password ||
+    endpoint.hash
+  ) {
+    throw new Error(
+      'DOUBAO_TTS_ENDPOINT 只支持不含账号、密码或片段的 HTTP(S) 地址。',
+    );
+  }
+  return endpoint.toString();
+}
+
+function doubaoEndpoint(config: DoubaoConfig): string {
+  return parseDoubaoEndpoint(config.endpoint);
 }
 
 export function speechRequest(text: string, config: DoubaoConfig) {
@@ -72,7 +123,7 @@ export function speechCacheKey(text: string, config: DoubaoConfig): string {
     .update(
       JSON.stringify({
         adapterVersion: 1,
-        endpoint: DOUBAO_TTS_ENDPOINT,
+        endpoint: doubaoEndpoint(config),
         resourceId: config.resourceId,
         request: speechRequest(text, config),
       }),
@@ -215,22 +266,26 @@ export async function synthesizeDoubao(
     DOUBAO_TTS_RESOURCE_ID: config.resourceId,
     DOUBAO_TTS_SPEAKER: config.speaker,
     DOUBAO_TTS_SPEECH_RATE: String(config.speechRate),
+    DOUBAO_TTS_ENDPOINT: config.endpoint,
   });
+  const endpoint = doubaoEndpoint(config);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 180_000);
   try {
     let response: Response;
     try {
-      response = await fetcher(DOUBAO_TTS_ENDPOINT, {
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        'X-Api-Request-Id': randomUUID(),
+      });
+      if (config.apiKey) headers.set('X-Api-Key', config.apiKey);
+      if (config.resourceId)
+        headers.set('X-Api-Resource-Id', config.resourceId);
+      response = await fetcher(endpoint, {
         method: 'POST',
         redirect: 'error',
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Api-Key': config.apiKey,
-          'X-Api-Resource-Id': config.resourceId,
-          'X-Api-Request-Id': randomUUID(),
-        },
+        headers,
         body: JSON.stringify(request),
       });
     } catch {
@@ -261,3 +316,5 @@ export async function synthesizeDoubao(
     clearTimeout(timer);
   }
 }
+
+export const synthesizeDoubaoCompatible = synthesizeDoubao;

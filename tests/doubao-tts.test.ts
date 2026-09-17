@@ -76,6 +76,34 @@ void test('configuration validates required credentials and speech rate without 
       return true;
     },
   );
+  assert.deepEqual(
+    readDoubaoConfig({
+      DOUBAO_TTS_ENDPOINT: 'http://192.168.1.20:8000/v3/tts/sse',
+      DOUBAO_TTS_SPEAKER: 'qwen-voice',
+    }),
+    {
+      apiKey: '',
+      resourceId: '',
+      speaker: 'qwen-voice',
+      speechRate: 0,
+      endpoint: 'http://192.168.1.20:8000/v3/tts/sse',
+    },
+  );
+  for (const endpoint of [
+    'not-a-url',
+    'file:///tmp/tts.sock',
+    'http://user:password@tts.example/v3',
+    'https://tts.example/v3#secret',
+  ]) {
+    assert.throws(
+      () =>
+        readDoubaoConfig({
+          DOUBAO_TTS_ENDPOINT: endpoint,
+          DOUBAO_TTS_SPEAKER: 'qwen-voice',
+        }),
+      /DOUBAO_TTS_ENDPOINT/,
+    );
+  }
 });
 
 void test('request contains MP3 parameters and no credentials; cache excludes key but includes sound settings', () => {
@@ -98,6 +126,13 @@ void test('request contains MP3 parameters and no credentials; cache excludes ke
     assert.notEqual(key, speechCacheKey('你好', changed));
   }
   assert.notEqual(key, speechCacheKey('再见', config));
+  assert.notEqual(
+    key,
+    speechCacheKey('你好', {
+      ...config,
+      endpoint: 'http://192.168.1.20:8000/v3/tts/sse',
+    }),
+  );
   assert.equal(
     speechRequest('你好', { ...config, subtitles: true }).req_params
       .audio_params.enable_subtitle,
@@ -162,7 +197,7 @@ void test('SSE ignores null audio in metadata and terminal packets without losin
   );
 });
 
-void test('adapter calls fixed official endpoint once with secret only in headers and unique request IDs', async () => {
+void test('adapter calls the default official endpoint once with secret only in headers and unique request IDs', async () => {
   const ids = new Set<string>();
   let calls = 0;
   const fakeFetch: typeof fetch = async (input, init) => {
@@ -184,6 +219,32 @@ void test('adapter calls fixed official endpoint once with secret only in header
   await synthesizeDoubao('你好', config, fakeFetch);
   assert.equal(calls, 2);
   assert.equal(ids.size, 2);
+});
+
+void test('adapter calls a custom Doubao-compatible endpoint without requiring authentication headers', async () => {
+  const endpoint = 'http://192.168.1.20:8000/v3/tts/sse';
+  const customConfig = {
+    ...config,
+    apiKey: '',
+    resourceId: '',
+    endpoint,
+  };
+  let calls = 0;
+  const result = await synthesizeDoubao(
+    '你好',
+    customConfig,
+    async (input, init) => {
+      calls++;
+      assert.equal(input, endpoint);
+      const headers = new Headers(init?.headers);
+      assert.equal(headers.get('x-api-key'), null);
+      assert.equal(headers.get('x-api-resource-id'), null);
+      assert.match(headers.get('x-api-request-id') ?? '', /^[0-9a-f-]{36}$/);
+      return response();
+    },
+  );
+  assert.equal(calls, 1);
+  assert.equal(result.audio.toString(), 'fake-audio');
 });
 
 void test('missing config never calls fetch, HTTP/network/stream errors are sanitized and never retried', async () => {

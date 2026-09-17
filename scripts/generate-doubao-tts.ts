@@ -2,7 +2,10 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { cachedSpeech, saveSpeech } from '@learn-anything/content-generator/tts/cache';
+import {
+  cachedSpeech,
+  saveSpeech,
+} from '@learn-anything/content-generator/tts/cache';
 import {
   readDoubaoConfig,
   speechCacheKey,
@@ -55,7 +58,7 @@ async function main() {
   const result = await synthesizeDoubao(narration.text, config);
   const audioPath = await saveSpeech(root, key, result.audio, {
     schemaVersion: 1,
-    provider: 'doubao',
+    provider: config.endpoint ? 'doubao-compatible' : 'doubao',
     createdAt: new Date().toISOString(),
     mode: values.mode,
     text: narration.text,

@@ -280,14 +280,10 @@ export async function main(args = process.argv.slice(2)) {
     }
     if (input) {
       // Validate both configurations and audio tools before any billable work.
-      const requiredFields = [
-        'DOUBAO_SPEECH_API_KEY',
-        'DOUBAO_TTS_RESOURCE_ID',
-        'DOUBAO_TTS_SPEAKER',
-        ...('brief' in input
+      const requiredFields =
+        'brief' in input
           ? ['LESSON_LLM_PROVIDER', 'LESSON_LLM_MODEL', 'LESSON_LLM_API_KEY']
-          : []),
-      ];
+          : [];
       const missing = requiredFields.filter(
         (field) => !process.env[field]?.trim(),
       );
