@@ -13,6 +13,7 @@
   },
   "scripts": {
     "demo": "node --conditions=learn-anything-source --experimental-strip-types scripts/lesson.ts --demo",
+    "web": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/lesson-web.ts",
     "dev": "vinext dev",
     "build": "npm run build:modules && vinext build",
     "build:modules": "npm run build -w @learn-anything/lesson-schema && npm run build -w @learn-anything/lesson-player && npm run build -w @learn-anything/content-generator && npm run build -w @learn-anything/lesson-draft-generator",
@@ -20,6 +21,7 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "test": "node --conditions=learn-anything-source --experimental-strip-types --test tests/*.test.ts",
     "test:browser": "playwright test",
+    "test:web": "playwright test --config playwright.web.config.ts",
     "test:modules": "npm run build:modules && node --experimental-strip-types --test tests/modules/*.test.ts",
     "tts:preview": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-doubao-tts.ts --mode preview",
     "tts:lesson": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-doubao-tts.ts --mode lesson",
@@ -29,7 +31,7 @@
     "lesson:draft": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/generate-lesson-draft.ts",
     "lesson": "node --conditions=learn-anything-source --env-file-if-exists=.env.local --experimental-strip-types scripts/lesson.ts",
     "typecheck": "tsc --noEmit --incremental false",
-    "lint": "oxlint app lib packages capabilities examples scripts viewer tests playwright.config.ts",
+    "lint": "oxlint app lib packages capabilities examples scripts viewer web tests playwright.config.ts playwright.web.config.ts",
     "format": "oxfmt"
   },
   "dependencies": {

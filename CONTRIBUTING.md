@@ -1,10 +1,10 @@
 # 贡献指南
 
-第一版重点是终端备课、编译和本地播放。提交前先阅读 [README](./README.md)、[架构](./docs/module-architecture.md)和[路线图](./ROADMAP.md)。
+第一版重点是本地 Web／终端备课、编译和播放。提交前先阅读 [README](./README.md)、[架构](./docs/module-architecture.md)和[路线图](./ROADMAP.md)。
 
 ## 开发
 
-需要 Node.js ≥22.13、FFmpeg／FFprobe。运行 `npm ci` 后，使用 `npm run demo` 体验；原网页示例使用 `npm run dev`。
+需要 Node.js ≥22.13、FFmpeg／FFprobe。运行 `npm ci` 后，使用 `npm run web` 体验本地工作台，`npm run demo` 体验最小播放器；原回归页面使用 `npm run dev`。
 
 修改时保持三个业务模块独立：模型生成材料，编译器生成播放资源，播放器只执行课程数据。新动画须提供校验、固定输入及暂停／seek／重播验证，见[动画指南](./docs/visual-grammars.md)。
 

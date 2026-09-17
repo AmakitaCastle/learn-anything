@@ -1,6 +1,6 @@
 # Git 与 CLI 自动发布
 
-仓库使用 GitHub Actions 的 `CLI CI/CD` 工作流。当前交付是源码 CLI Demo，CD 发布 GitHub Release，不部署在线服务，也不发布 npm 包。
+仓库使用 GitHub Actions 的 `CLI CI/CD` 工作流。当前交付是源码形式的本地 Web + CLI Demo，CD 发布 GitHub Release，不部署在线服务，也不发布 npm 包。
 
 ## 日常提交
 
