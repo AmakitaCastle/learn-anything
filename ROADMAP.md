@@ -1,10 +1,11 @@
 # 路线图
 
-## 第一版：CLI Demo
+## 第一版：本地 Web + CLI Demo
 
-本版按“LLM 输出 LessonDraft 0.1.0 → compileLessonDraft() → MP3、LessonSpec 0.1.0、VTT → lesson-player”交付，用户从终端生成课程，在本机浏览器播放。共享协议版本保持 0.1.0，首个 Demo 发布标签使用 `v0.1.0-demo`。
+本版按“LLM 输出 LessonDraft 0.1.0 → compileLessonDraft() → MP3、LessonSpec 0.1.0、VTT → lesson-player”交付。用户可以在本地 Web 工作台完成主题输入、进度查看和课程播放，CLI 继续承担批处理、恢复与导出。共享协议版本保持 0.1.0，首个 Demo 发布标签使用 `v0.1.0-demo`。
 
 - 无密钥自带课程：`npm run demo`。
+- 本地 Web 工作台：`npm run web`。
 - 主题生成与编译：`npm run lesson -- "主题" --generate`。
 - 保存产物、课程重播、语音缓存与编译失败恢复。
 - 本地 MP4 导出，支持 16:9／9:16／1:1 比例及带旁白的确定性帧渲染。

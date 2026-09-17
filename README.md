@@ -1,4 +1,4 @@
-# learnAnything — CLI Demo
+# learnAnything — 本地 Web Demo
 
 输入一个主题，在本地生成一堂包含语音、动态板书和概念动画的课程。
 
@@ -11,26 +11,32 @@ LLM → LessonDraft 0.1.0 → compileLessonDraft()
 
 ![升温曲线示例：语音、全文板书和图示同步](./docs/images/demo.png)
 
-第一版通过终端使用，课程在本机浏览器播放。当前为实验性 Demo，课程内容与语音需要人工复核；协议版本为 0.1.0，尚未发布 npm 包。
+第一版提供本地 Web 工作台和完整 CLI。课程内容与语音需要人工复核；协议版本为 0.1.0，尚未发布 npm 包，也不是公网账户服务。
 
-## 先体验一堂课
+## 先打开 Web 工作台
 
 安装 Node.js ≥22.13，下载源码并进入项目目录：
 
 ```bash
 npm ci
-npm run demo
+npm run web
 ```
 
-浏览器打开后点击“播放”。自带升温曲线课展示完整旁白板书、图文跟随和局部圈重点；支持暂停、拖动进度、倍速、静音和重播。播放器底部可切换浅色／深色，并记住选择；展开「字体」可分别更换中文及英文／数字的手写字体。**体验自带课程无需 API Key、FFmpeg 或语音缓存**，安装依赖后可离线播放。
+页面可以输入主题、查看生成进度并直接播放课程；“先看示例”展示完整旁白板书、图文跟随和局部圈重点。播放器支持暂停、拖动进度、倍速、静音和重播。**体验自带课程无需 API Key、FFmpeg 或语音缓存**，安装依赖后可离线播放。
 
 不自动打开浏览器时：
 
 ```bash
-npm run demo -- --no-open
+npm run web -- --no-open
 ```
 
-打开终端显示的地址。按 Ctrl+C 关闭本地服务。
+打开终端显示的随机地址。Web 服务只监听 `127.0.0.1`；密钥仍留在 `.env.local`，页面只看到配置是否就绪。按 Ctrl+C 关闭本地服务。完整操作与安全边界见[本地 Web Demo](./docs/web-demo.md)。
+
+偏好终端或需要验证最小播放器时，也可以运行：
+
+```bash
+npm run demo
+```
 
 ## 生成自己的课程
 
@@ -125,7 +131,7 @@ LLM 生成受约束的材料与语义锚点，编译器根据真实语音词时�
 
 新材料使用全文板书，保留讲解过程，关联图示并跟随当前讲解滚动。手写路径由字体轮廓生成，不保证规范汉字笔顺；缺字符局部回退。知识正确性、声音自然度和低置信度词需人工检查。
 
-本版聚焦主题生成、本地编译与本地播放；文件解析／RAG、账户、在线服务、学习画像和互动追问列入后续路线图。macOS 已做本地验证，Linux 由 CI 复核；Windows 尚未做实机验收。
+本版聚焦主题生成、本地编译与本地播放，并提供同一主链路的本地 Web 界面；文件解析／RAG、账户、在线服务、学习画像和互动追问列入后续路线图。macOS 已做本地验证，Linux 由 CI 复核；Windows 尚未做实机验收。
 
 | 模块                              | 职责                                   |
 | --------------------------------- | -------------------------------------- |
@@ -133,9 +139,9 @@ LLM 生成受约束的材料与语义锚点，编译器根据真实语音词时�
 | `packages/content-generator`      | TTS、MP3、真实时间对齐与课程编译       |
 | `packages/lesson-player`          | 音频时钟、板书、动画和播放控制         |
 | `packages/lesson-schema`          | LessonDraft／LessonSpec 0.1.0 公共协议 |
-| `scripts/`、`viewer/`             | 终端编排与独立本地播放宿主             |
+| `scripts/`、`viewer/`、`web/`     | 终端／Web 编排与独立本地播放宿主       |
 
-模块互不依赖，只共享协议。原网页开发入口 `npm run dev` 保留水循环及二分查找等回归示例。
+模块互不依赖，只共享协议。`npm run web` 是面向使用者的本地工作台；原开发入口 `npm run dev` 保留水循环及二分查找等回归示例。
 
 ## 开发与贡献
 
@@ -151,7 +157,7 @@ npm run test:browser
 
 已有开发服务时，可用 `VINEXT_NO_DEV_LOCK=1 npm run test:browser` 启动独立测试服务。模型测试使用传输夹具，音频测试包含实际编码的静音 MP3，不消耗接口额度。浏览器像素比较范围固定为 Chromium 1280×720、DPR 1；其他平台像素一致性不作承诺。
 
-- [架构](./docs/module-architecture.md) · [课程材料与编译](./docs/lesson-draft.md)
+- [本地 Web Demo](./docs/web-demo.md) · [架构](./docs/module-architecture.md) · [课程材料与编译](./docs/lesson-draft.md)
 - [播放器接口](./docs/classroom-capability.md) · [动画扩展](./docs/visual-grammars.md)
 - [能力包扩展规范](./docs/capability-packs.md) · [文科情境动画样例](./examples/task-separation/README.md)
 - [全文板书](./docs/full-board.md) · [手写资源](./docs/handwriting-resources.md)
